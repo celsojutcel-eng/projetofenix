@@ -199,6 +199,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+
 // ---------- BOTÃO INSTALAR PWA ----------
 let deferredPrompt;
 
