@@ -182,12 +182,11 @@ const DAILY_PHRASES = [
 
 // Função para obter a frase do dia baseado na data
 function getPhraseForDate(dateStr) {
-  // dateStr = "yyyy-mm-dd"
   const [year, month, day] = dateStr.split('-').map(Number);
   const date = new Date(year, month - 1, day); // hora local 00:00
   const startOfYear = new Date(date.getFullYear(), 0, 1); // 1º de janeiro local
   const dayOfYear = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
-  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length];
+  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length]; // Loop se frases < 365
 }
 
 /* ===============================
@@ -247,13 +246,24 @@ function loadDailyEntry(date) {
   const form = document.getElementById('entry-form');
   const loading = document.getElementById('loading-overlay');
 
+  // Atualiza o date picker
+  document.getElementById('date-picker').value = date;
+
+  // Atualiza nome do dia e data completa
+  const dayNames = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+  const [year, month, day] = date.split('-').map(Number);
+  const dateObj = new Date(year, month-1, day);
+  document.getElementById('display-day-name').textContent = dayNames[dateObj.getDay()];
+  document.getElementById('display-full-date').textContent = `${String(day).padStart(2,'0')} de ${dateObj.toLocaleString('pt-BR',{month:'long'})} de ${year}`;
+
+  // Procura entrada existente ou cria nova
   let entry = state.entries.find(e => e.date === date);
 
   if (!entry) {
     entry = {
       date,
       phrase: getPhraseForDate(date),
-      question: QUESTIONS, // array fixo para todos os dias
+      question: QUESTIONS,
       mood: '',
       reconnection: '',
       writing: '',
@@ -265,7 +275,6 @@ function loadDailyEntry(date) {
   }
 
   state.currentEntry = entry;
-
   populateForm(entry);
 
   loading.classList.add('hidden');
@@ -277,7 +286,7 @@ function loadDailyEntry(date) {
 ================================ */
 function populateForm(e) {
   document.getElementById('display-phrase').textContent = `"${e.phrase}"`;
-  document.getElementById('display-question').textContent = e.question[0]; // Mostra primeira pergunta
+  document.getElementById('display-question').textContent = e.question[0]; // mostra a primeira pergunta
 }
 
 /* ===============================
@@ -337,6 +346,7 @@ function setupListeners() {
 function saveData() {
   localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
 }
+
 </script>
 
 </body>
