@@ -234,37 +234,71 @@ document.getElementById('date-picker').onchange = e=>{
 // Inicialização
 window.addEventListener('DOMContentLoaded', ()=>{loadDailyEntry(state.selectedDate);});
 
-// Service Worker PWA
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('/sw.js').then(reg=>console.log("Service Worker registrado!",reg));
+<script>
+/* ================================
+   SERVICE WORKER (CORRETO)
+================================ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('service-worker.js')
+      .then(reg => {
+        console.log('✅ Service Worker registrado:', reg.scope);
+      })
+      .catch(err => {
+        console.error('❌ Erro no Service Worker:', err);
+      });
   });
 }
 
-// Botão instalação PWA
+/* ================================
+   BOTÃO DE INSTALAÇÃO PWA
+================================ */
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e=>{
+
+window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+
+  // evita criar botão duplicado
+  if (document.getElementById('pwa-install-btn')) return;
+
   const installBtn = document.createElement('button');
-  installBtn.textContent="📲 Instalar Projeto Fênix";
-  installBtn.style.position="fixed"; installBtn.style.bottom="16px"; installBtn.style.right="16px";
-  installBtn.style.background="#c67b5c"; installBtn.style.color="white";
-  installBtn.style.border="none"; installBtn.style.borderRadius="1rem";
-  installBtn.style.padding="0.75rem 1rem"; installBtn.style.fontWeight="bold";
-  installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
-  installBtn.style.cursor="pointer";
+  installBtn.id = 'pwa-install-btn';
+  installBtn.textContent = '📲 Instalar Projeto Fênix';
+
+  Object.assign(installBtn.style, {
+    position: 'fixed',
+    bottom: '16px',
+    right: '16px',
+    background: '#c67b5c',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '1rem',
+    padding: '0.75rem 1rem',
+    fontWeight: 'bold',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+    cursor: 'pointer',
+    zIndex: '9999'
+  });
+
   document.body.appendChild(installBtn);
-  installBtn.addEventListener('click', async ()=>{
-    installBtn.disabled=true;
+
+  installBtn.addEventListener('click', async () => {
+    installBtn.disabled = true;
     deferredPrompt.prompt();
-    const {outcome} = await deferredPrompt.userChoice;
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      console.log('✅ Usuário instalou o PWA');
+    }
+
     deferredPrompt = null;
     installBtn.remove();
-    if(outcome==='accepted') console.log("Usuário instalou o PWA!");
   });
 });
 </script>
+
 
 </body>
 </html>
