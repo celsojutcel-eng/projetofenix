@@ -4,20 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Projeto Fênix - Planner 2026</title>
+
+<!-- Tailwind -->
 <script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c67b5c">
+
 <style>
 :root {
-  --color-bg:#fdfbf7; --color-primary:#c67b5c; --color-secondary:#5d4a44; --color-text:#3d3d3d; --color-border:#e8e2d9;
+  --color-bg:#fdfbf7;
+  --color-primary:#c67b5c;
+  --color-secondary:#5d4a44;
+  --color-text:#3d3d3d;
+  --color-border:#e8e2d9;
 }
-body{font-family:'Inter',sans-serif;background:var(--color-bg);color:var(--color-text);scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--color-bg);color:var(--color-text);scroll-behavior:smooth;margin:0;}
 h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
 .card{background:white;border:1px solid var(--color-border);border-radius:1.5rem;box-shadow:0 4px 20px -5px rgba(0,0,0,0.05);}
 .input-elegant{background:#fdfbf7;border:1px solid var(--color-border);border-radius:1rem;padding:1rem;width:100%;transition:all 0.3s;}
 .input-elegant:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(198,123,92,0.1);}
-.btn-mood{padding:.75rem 1rem;border-radius:1rem;border:1px solid var(--color-border);font-size:.875rem;background:white;transition:all .2s;}
+.btn-mood{padding:.75rem 1rem;border-radius:1rem;border:1px solid var(--color-border);font-size:.875rem;background:white;transition:all .2s;cursor:pointer;}
 .btn-mood.active{background:var(--color-primary);color:white;border-color:var(--color-primary);transform:scale(1.05);}
 .fade-in{animation:fadeIn .4s ease-out forwards;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
@@ -169,6 +182,42 @@ document.getElementById('date-picker').value=state.selectedDate;
 document.getElementById('date-picker').onchange=e=>{state.selectedDate=e.target.value; loadDailyEntry(state.selectedDate);};
 
 window.addEventListener('DOMContentLoaded',()=>{loadDailyEntry(state.selectedDate);});
+
+// ===== SERVICE WORKER =====
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').then(reg=>console.log("Service Worker registrado!",reg));
+  });
+}
+
+// ===== PWA INSTALL PROMPT =====
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  const installBtn=document.createElement('button');
+  installBtn.textContent="📲 Instalar Projeto Fênix";
+  installBtn.style.position="fixed";
+  installBtn.style.bottom="16px";
+  installBtn.style.right="16px";
+  installBtn.style.background="#c67b5c";
+  installBtn.style.color="white";
+  installBtn.style.border="none";
+  installBtn.style.borderRadius="1rem";
+  installBtn.style.padding="0.75rem 1rem";
+  installBtn.style.fontWeight="bold";
+  installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
+  installBtn.style.cursor="pointer";
+  document.body.appendChild(installBtn);
+  installBtn.addEventListener('click',async()=>{
+    installBtn.disabled=true;
+    deferredPrompt.prompt();
+    const {outcome}=await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    installBtn.remove();
+    if(outcome==='accepted') console.log("Usuário instalou o PWA!");
+  });
+});
 </script>
 
 </body>
