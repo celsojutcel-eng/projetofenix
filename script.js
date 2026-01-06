@@ -1,14 +1,14 @@
 // ---------------------------
-// script.js - Projeto Fênix PWA Planner (corrigido para data local)
+// script.js - Projeto Fênix PWA Planner (data local corrigida)
 // ---------------------------
 
 // Retorna data local no formato YYYY-MM-DD
 function getTodayLocal() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const month = now.getMonth() + 1; // 0-11 → 1-12
+  const day = now.getDate();
+  return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
 }
 
 const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
@@ -78,7 +78,7 @@ function loadDailyEntry(date){
 
   // Datas e frase
   const [y, m, d] = date.split('-').map(Number);
-  const dateObj = new Date(y, m - 1, d);
+  const dateObj = new Date(y, m - 1, d, 12); // meio-dia para evitar dia anterior por fuso horário
 
   document.getElementById('display-phrase').textContent = entry.phrase;
   document.getElementById('display-full-date').textContent = dateObj.toLocaleDateString('pt-BR',{year:'numeric', month:'long', day:'numeric'});
@@ -153,7 +153,7 @@ window.addEventListener('beforeinstallprompt', e=>{
   installBtn.textContent = "📲 Instalar Projeto Fênix";
   installBtn.style.position = "fixed"; installBtn.style.bottom = "16px";
   installBtn.style.right = "16px";
-  installBtn.style.background = "#D946EF";
+  installBtn.style.background = "#c67b5c";
   installBtn.style.color = "white";
   installBtn.style.border = "none";
   installBtn.style.borderRadius = "1rem";
