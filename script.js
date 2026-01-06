@@ -189,15 +189,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadDailyEntry(state.selectedDate);
 });
 
-// ---------- SERVICE WORKER (CORRETO) ----------
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('./service-worker.js')
-      .then(reg => console.log('Service Worker registrado', reg))
-      .catch(err => console.error('Erro no Service Worker', err));
-  });
-}
+
 
 
 // ---------- BOTÃO INSTALAR PWA ----------
