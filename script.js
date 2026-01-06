@@ -1,174 +1,167 @@
-// ---------------------------
-// script.js - Projeto Fênix PWA Planner (data corrigida)
-// ---------------------------
+// ===============================
+// Projeto Fênix – script.js
+// Correção definitiva de data
+// ===============================
 
-// Retorna data local no formato YYYY-MM-DD
+// ---------- UTILIDADES DE DATA ----------
+
+// Retorna data local real (YYYY-MM-DD) SEM UTC
 function getTodayLocal() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = now.getMonth() + 1; // 0-11 → 1-12
-  const day = now.getDate();
-  return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
-const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
-const QUESTIONS = [
-  "O que sua alma pede hoje?",
-  "Onde você pode ser mais gentil consigo?",
-  "O que precisa de pausa agora?"
-];
-const DAILY_PHRASES = [
-  "Renove sua energia e desperte sua essência.",
-  "Cada amanhecer é um convite ao autoconhecimento.",
-  "Pequenos passos diários criam grandes transformações.",
-  "O silêncio revela aquilo que palavras não conseguem.",
-  "Respire fundo e sinta seu ritmo interno.",
-  "Gratidão transforma o ordinário em extraordinário.",
-  "Permita-se pausar e ouvir seu coração.",
-  "O reencontro com você começa no agora.",
-  "A coragem surge quando você se escuta.",
-  "Liberte-se do que não serve mais."
-];
-
-// ===== ESTADO =====
-let state = {
-  selectedDate: getTodayLocal(),
-  currentEntry: null,
-  entries: []
-};
-
-try {
-  const saved = localStorage.getItem('projeto_fenix_data');
-  if(saved) state.entries = JSON.parse(saved);
-} catch(e){
-  localStorage.removeItem('projeto_fenix_data');
-  state.entries = [];
+// Converte YYYY-MM-DD para objeto Date seguro
+function parseLocalDate(dateString) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
-function saveData(){
-  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
+// Renderiza dia da semana e data longa
+function renderDateHeader(dateString) {
+  const date = parseLocalDate(dateString);
+
+  const weekDay = date.toLocaleDateString('pt-BR', {
+    weekday: 'long'
+  });
+
+  const fullDate = date.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  const dayNameEl = document.getElementById('display-day-name');
+  const fullDateEl = document.getElementById('display-full-date');
+
+  if (dayNameEl) dayNameEl.textContent = weekDay;
+  if (fullDateEl) fullDateEl.textContent = fullDate;
 }
 
-// Carrega entrada do dia
-function loadDailyEntry(date){
-  const loading = document.getElementById('loading-overlay');
-  const form = document.getElementById('entry-form');
-  const questionsContainer = document.getElementById('questions-container');
-  const moodContainer = document.getElementById('mood-container');
+// ---------- CALENDÁRIO ----------
 
-  loading.classList.remove('hidden');
-  form.classList.add('hidden');
+function generateMonthlyCalendar(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
-  let entry = state.entries.find(e => e.date === date);
-  if(!entry){
-    entry = {
-      date,
-      phrase: DAILY_PHRASES[Math.floor(Math.random()*DAILY_PHRASES.length)],
-      questions: QUESTIONS.map(q => ({text: q, answer: ''})),
-      mood: '',
-      writing: '',
-      selfcare: '',
-      anchor: ''
-    };
-    state.entries.push(entry);
-    saveData();
+  const todayStr = getTodayLocal();
+  const todayDate = parseLocalDate(todayStr);
+
+  const year = todayDate.getFullYear();
+  const month = todayDate.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  container.innerHTML = '';
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    const entry = document.createElement('div');
+    entry.className = 'daily-entry';
+    entry.dataset.date = dateStr;
+
+    const savedNote = localStorage.getItem(`note-${dateStr}`) || '';
+
+    entry.innerHTML = `
+      <h3>Dia ${day}</h3>
+      <textarea class="daily-note" placeholder="Escreva aqui suas reflexões...">${savedNote}</textarea>
+      <button class="save-btn">Salvar</button>
+    `;
+
+    entry.style.display = dateStr === todayStr ? 'block' : 'none';
+
+    const btn = entry.querySelector('.save-btn');
+    const textarea = entry.querySelector('.daily-note');
+
+    btn.addEventListener('click', () => {
+      localStorage.setItem(`note-${dateStr}`, textarea.value);
+      alert('Nota salva com sucesso!');
+    });
+
+    container.appendChild(entry);
+  }
+}
+
+// ---------- EXIBIÇÃO DE ENTRADA ----------
+
+function showEntry(dateString) {
+  document.querySelectorAll('.daily-entry').forEach(entry => {
+    entry.style.display = entry.dataset.date === dateString ? 'block' : 'none';
+  });
+}
+
+// ---------- NAVEGAÇÃO ----------
+
+function shiftDate(dateString, offset) {
+  const date = parseLocalDate(dateString);
+  date.setDate(date.getDate() + offset);
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+
+  return `${y}-${m}-${d}`;
+}
+
+function setupNavigation() {
+  const prevBtn = document.getElementById('prev-day');
+  const nextBtn = document.getElementById('next-day');
+  const datePicker = document.getElementById('date-picker');
+
+  if (!datePicker) return;
+
+  let currentDate = datePicker.value || getTodayLocal();
+
+  function update(dateStr) {
+    currentDate = dateStr;
+    datePicker.value = dateStr;
+    renderDateHeader(dateStr);
+    showEntry(dateStr);
   }
 
-  state.currentEntry = entry;
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      update(shiftDate(currentDate, -1));
+    });
+  }
 
-  // Correção da data para evitar dia anterior por fuso horário
-  const [y, m, d] = date.split('-').map(Number);
-  const dateObj = new Date(y, m - 1, d, 12); // hora fixa no meio do dia
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      update(shiftDate(currentDate, 1));
+    });
+  }
 
-  // Datas e frase
-  document.getElementById('display-phrase').textContent = entry.phrase;
-  document.getElementById('display-full-date').textContent = dateObj.toLocaleDateString('pt-BR',{year:'numeric', month:'long', day:'numeric'});
-  document.getElementById('display-day-name').textContent = dateObj.toLocaleDateString('pt-BR',{weekday:'long'});
-
-  // Perguntas
-  questionsContainer.innerHTML = '';
-  entry.questions.forEach((q,i)=>{
-    const card = document.createElement('div');
-    card.className = 'card p-4';
-    const p = document.createElement('p'); p.textContent = q.text;
-    const ta = document.createElement('textarea');
-    ta.className = 'input-elegant w-full'; ta.value = q.answer;
-    ta.oninput = e => { entry.questions[i].answer = e.target.value; saveData(); };
-    card.appendChild(p); card.appendChild(ta); questionsContainer.appendChild(card);
+  datePicker.addEventListener('change', (e) => {
+    update(e.target.value);
   });
 
-  // Moods
-  moodContainer.innerHTML = '';
-  MOODS.forEach(m=>{
-    const btn = document.createElement('button');
-    btn.textContent = m;
-    btn.className = 'btn-mood';
-    if(entry.mood === m) btn.classList.add('active');
-    btn.onclick = () => { entry.mood = m; saveData(); loadDailyEntry(date); };
-    moodContainer.appendChild(btn);
-  });
-
-  // Escrita terapêutica
-  const inputWriting = document.getElementById('input-writing');
-  inputWriting.value = entry.writing;
-  inputWriting.oninput = e => { entry.writing = e.target.value; saveData(); };
-
-  // Autocuidado
-  const inputSelfcare = document.getElementById('input-selfcare');
-  inputSelfcare.value = entry.selfcare;
-  inputSelfcare.oninput = e => { entry.selfcare = e.target.value; saveData(); };
-
-  // Âncora do dia
-  const inputAnchor = document.getElementById('input-anchor');
-  inputAnchor.value = entry.anchor;
-  inputAnchor.oninput = e => { entry.anchor = e.target.value; saveData(); };
-
-  loading.classList.add('hidden'); 
-  form.classList.remove('hidden');
+  update(currentDate);
 }
 
-// Eventos
-const datePicker = document.getElementById('date-picker');
-datePicker.value = state.selectedDate;
-datePicker.onchange = e => {
-  state.selectedDate = e.target.value;
-  loadDailyEntry(state.selectedDate);
-};
+// ---------- INICIALIZAÇÃO ----------
 
-// Inicialização
-window.addEventListener('DOMContentLoaded', ()=>{ loadDailyEntry(state.selectedDate); });
+window.addEventListener('DOMContentLoaded', () => {
+  const datePicker = document.getElementById('date-picker');
 
-// Service Worker PWA
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('./sw.js').then(reg => console.log("Service Worker registrado!", reg));
-  });
-}
+  if (datePicker) {
+    datePicker.value = getTodayLocal();
+    renderDateHeader(datePicker.value);
+  }
 
-// Botão instalação PWA
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e=>{
-  e.preventDefault();
-  deferredPrompt = e;
-  const installBtn = document.createElement('button');
-  installBtn.textContent = "📲 Instalar Projeto Fênix";
-  installBtn.style.position = "fixed"; installBtn.style.bottom = "16px";
-  installBtn.style.right = "16px";
-  installBtn.style.background = "#c67b5c";
-  installBtn.style.color = "white";
-  installBtn.style.border = "none";
-  installBtn.style.borderRadius = "1rem";
-  installBtn.style.padding = "0.75rem 1rem";
-  installBtn.style.fontWeight = "bold";
-  installBtn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-  installBtn.style.cursor = "pointer";
-  document.body.appendChild(installBtn);
-  installBtn.addEventListener('click', async ()=>{
-    installBtn.disabled = true;
-    deferredPrompt.prompt();
-    const {outcome} = await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.remove();
-    if(outcome === 'accepted') console.log("Usuário instalou o PWA!");
-  });
+  generateMonthlyCalendar('calendar-container');
+  setupNavigation();
 });
+
+// ---------- SERVICE WORKER ----------
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('./sw.js')
+      .then(() => console.log('Service Worker registrado'))
+      .catch(err => console.error('Erro no Service Worker:', err));
+  });
+}
