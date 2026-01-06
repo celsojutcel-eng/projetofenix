@@ -140,67 +140,99 @@
   </main>
 
 <script>
-/* ===============================
-   ESTADO GLOBAL
-================================ */
+// ===============================
+// ESTADO GLOBAL
+// ===============================
 function getLocalDate() {
   const today = new Date();
-  return today.toISOString().split('T')[0]; // yyyy-mm-dd
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2,'0');
+  const day = String(today.getDate()).padStart(2,'0');
+  return `${year}-${month}-${day}`;
 }
 
 let state = {
   currentView:'today',
   selectedDate:getLocalDate(),
-  entries: JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
+  entries:JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
   currentEntry:null
 };
 
-const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
-const QUESTIONS=["O que sua alma pede hoje?","Onde você pode ser mais gentil consigo?","O que precisa de pausa agora?"];
-const DAILY_PHRASES=[
-  "Renove sua energia e desperte sua essência.",
-  "Cada amanhecer é um convite ao autoconhecimento.",
-  "Pequenos passos diários criam grandes transformações.",
-  "O silêncio revela aquilo que palavras não conseguem.",
-  "Respire fundo e sinta seu ritmo interno.",
-  "Gratidão transforma o ordinário em extraordinário.",
-  "Permita-se pausar e ouvir seu coração.",
-  "O reencontro com você começa no agora.",
-  "A coragem surge quando você se escuta.",
-  "Liberte-se do que não serve mais."
+const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+const FALLBACK_CONTENT = [
+  { phrase:"O renascimento começa quando você se escuta.", question:"O que sua alma pede hoje?" },
+  { phrase:"Seu ritmo também é sagrado.", question:"Onde você pode ser mais gentil consigo?" },
+  { phrase:"Há força no silêncio.", question:"O que precisa de pausa agora?" }
 ];
 
-/* ===============================
-   FUNÇÕES PRINCIPAIS
-================================ */
-function getPhraseForDate(dateStr){
-  const [y,m,d]=dateStr.split('-').map(Number);
-  const date=new Date(y,m-1,d);
-  const start=new Date(y,0,1);
-  const dayOfYear=Math.floor((date-start)/(1000*60*60*24));
-  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length];
+// ===============================
+// INICIALIZAÇÃO
+// ===============================
+window.addEventListener('DOMContentLoaded',()=>{
+  loadDailyEntry(state.selectedDate);
+  renderMoods();
+  setupListeners();
+
+  // ===============================
+  // Botão de instalação PWA
+  // ===============================
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt',(e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+
+    const installBtn = document.createElement('button');
+    installBtn.textContent = "📲 Instalar Projeto Fênix";
+    installBtn.id = "install-btn";
+    installBtn.style.position="fixed";
+    installBtn.style.bottom="16px";
+    installBtn.style.right="16px";
+    installBtn.style.background="#c67b5c";
+    installBtn.style.color="white";
+    installBtn.style.border="none";
+    installBtn.style.borderRadius="1rem";
+    installBtn.style.padding="0.75rem 1rem";
+    installBtn.style.fontWeight="bold";
+    installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
+    installBtn.style.cursor="pointer";
+
+    document.body.appendChild(installBtn);
+
+    installBtn.addEventListener('click',async()=>{
+      installBtn.disabled=true;
+      deferredPrompt.prompt();
+      const {outcome} = await deferredPrompt.userChoice;
+      deferredPrompt=null;
+      installBtn.remove();
+      if(outcome==='accepted') console.log("Usuário aceitou instalar o PWA!");
+      else console.log("Usuário rejeitou instalar o PWA.");
+    });
+  });
+});
+
+// ===============================
+// FUNÇÕES PRINCIPAIS DO APP
+// ===============================
+function switchView(view){
+  state.currentView=view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
 }
 
 function loadDailyEntry(date){
-  const form=document.getElementById('entry-form');
-  const loading=document.getElementById('loading-overlay');
+  const form = document.getElementById('entry-form');
+  const loading = document.getElementById('loading-overlay');
 
-  document.getElementById('date-picker').value=date;
+  let entry = state.entries.find(e=>e.date===date);
 
-  const dayNames=["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
-  const [y,m,d]=date.split('-').map(Number);
-  const dateObj=new Date(y,m-1,d);
-
-  document.getElementById('display-day-name').textContent=dayNames[dateObj.getDay()];
-  document.getElementById('display-full-date').textContent=`${String(d).padStart(2,'0')} de ${dateObj.toLocaleString('pt-BR',{month:'long'})} de ${y}`;
-
-  let entry=state.entries.find(e=>e.date===date);
   if(!entry){
+    const r=FALLBACK_CONTENT[Math.floor(Math.random()*FALLBACK_CONTENT.length)];
     entry={
       date,
-      phrase:getPhraseForDate(date),
-      questions:QUESTIONS.map(q=>({text:q, answer:''})),
+      phrase:r.phrase,
+      question:r.question,
       mood:'',
+      reconnection:'',
       writing:'',
       selfcare:'',
       keyword:''
@@ -208,105 +240,67 @@ function loadDailyEntry(date){
     state.entries.push(entry);
     saveData();
   }
+
   state.currentEntry=entry;
   populateForm(entry);
-  renderMoods();
 
   loading.classList.add('hidden');
   form.classList.remove('hidden');
 }
 
-function populateForm(entry){
-  document.getElementById('display-phrase').textContent=`"${entry.phrase}"`;
+function populateForm(e){
+  // Atualiza frase e pergunta
+  document.getElementById('display-phrase').textContent=`"${e.phrase}"`;
+  document.getElementById('display-question').textContent=e.question;
 
-  const container=document.getElementById('questions-container');
-  container.innerHTML='';
-  entry.questions.forEach((q,index)=>{
-    const card=document.createElement('div');
-    card.className='card p-4 md:p-6 space-y-2';
+  // Atualiza data completa e dia da semana
+  const dateObj = new Date(e.date);
+  const optionsFull = { year:'numeric', month:'long', day:'numeric' };
+  const optionsWeekday = { weekday:'long' };
+  const displayFull = dateObj.toLocaleDateString('pt-BR', optionsFull);
+  const displayWeekday = dateObj.toLocaleDateString('pt-BR', optionsWeekday);
 
-    const p=document.createElement('p');
-    p.className='text-[#5d4a44] font-serif italic text-lg';
-    p.textContent=q.text;
-
-    const textarea=document.createElement('textarea');
-    textarea.className='input-elegant min-h-[100px] w-full';
-    textarea.value=q.answer;
-    textarea.placeholder='Sua alma responde...';
-    textarea.oninput=(e)=>{state.currentEntry.questions[index].answer=e.target.value; saveData();};
-
-    card.appendChild(p);
-    card.appendChild(textarea);
-    container.appendChild(card);
-  });
+  document.getElementById('display-full-date').textContent = displayFull.charAt(0).toUpperCase() + displayFull.slice(1);
+  document.getElementById('display-day-name').textContent = displayWeekday.charAt(0).toUpperCase() + displayWeekday.slice(1);
 }
 
 function renderMoods(){
   const container=document.getElementById('mood-container');
   container.innerHTML='';
-  MOODS.forEach(m=>{
+  MOODS.forEach(mood=>{
     const btn=document.createElement('button');
     btn.className='btn-mood';
-    btn.textContent=m;
-    btn.onclick=()=>{state.currentEntry.mood=m; saveData(); renderMoods();};
-    if(state.currentEntry?.mood===m) btn.classList.add('active');
+    btn.textContent=mood;
+    btn.onclick=()=>{
+      state.currentEntry.mood=mood;
+      saveData();
+      renderMoods();
+    };
+    if(state.currentEntry?.mood===mood) btn.classList.add('active');
     container.appendChild(btn);
   });
 }
 
 function setupListeners(){
-  const datePicker=document.getElementById('date-picker');
-  datePicker.value=state.selectedDate;
-  datePicker.onchange=(e)=>{state.selectedDate=e.target.value; loadDailyEntry(state.selectedDate);};
+  document.getElementById('date-picker').value=state.selectedDate;
+  document.getElementById('date-picker').onchange=e=>{
+    state.selectedDate=e.target.value;
+    loadDailyEntry(state.selectedDate);
+  };
 
-  [['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']].forEach(([id,key])=>{
+  [['input-reconnection','reconnection'],['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']]
+  .forEach(([id,key])=>{
     const el=document.getElementById(id);
-    el.oninput=(e)=>{state.currentEntry[key]=e.target.value; saveData();};
+    el.oninput=e=>{
+      state.currentEntry[key]=e.target.value;
+      saveData();
+    };
   });
 }
 
-function saveData(){localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));}
-function switchView(view){state.currentView=view; document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(`view-${view}`).classList.add('active');}
-
-/* ===============================
-   PWA INSTALL BUTTON
-================================ */
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
-  let deferredPrompt=e;
-
-  const installBtn=document.createElement('button');
-  installBtn.textContent="📲 Instalar Projeto Fênix";
-  installBtn.style.position="fixed";
-  installBtn.style.bottom="16px";
-  installBtn.style.right="16px";
-  installBtn.style.background="#c67b5c";
-  installBtn.style.color="white";
-  installBtn.style.border="none";
-  installBtn.style.borderRadius="1rem";
-  installBtn.style.padding="0.75rem 1rem";
-  installBtn.style.fontWeight="bold";
-  installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
-  installBtn.style.cursor="pointer";
-  document.body.appendChild(installBtn);
-
-  installBtn.addEventListener('click',async()=>{
-    installBtn.disabled=true;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt=null;
-    installBtn.remove();
-  });
-});
-
-/* ===============================
-   INICIALIZAÇÃO
-================================ */
-window.addEventListener('DOMContentLoaded',()=>{
-  loadDailyEntry(state.selectedDate);
-  renderMoods();
-  setupListeners();
-});
+function saveData(){
+  localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));
+}
 </script>
 
 </body>
