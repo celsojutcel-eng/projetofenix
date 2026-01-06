@@ -42,67 +42,80 @@ h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
 </head>
 <body class="pb-24 md:pb-8">
 
+<!-- HEADER -->
 <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#e8e2d9]">
-<div class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-  <div class="text-center md:text-left">
-    <h1 class="text-2xl md:text-3xl font-bold text-[#c67b5c]">Projeto Fênix <span class="text-[#a89f91] font-light italic">2026</span></h1>
-    <p class="text-[10px] uppercase tracking-[0.2em] text-[#a89f91] font-bold">Redescubra sua essência diariamente</p>
+  <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="text-center md:text-left">
+      <h1 class="text-2xl md:text-3xl font-bold text-[#c67b5c]">Projeto Fênix <span class="text-[#a89f91] font-light italic">2026</span></h1>
+      <p class="text-[10px] uppercase tracking-[0.2em] text-[#a89f91] font-bold">Redescubra sua essência diariamente</p>
+    </div>
   </div>
-</div>
 </header>
 
+<!-- MAIN -->
 <main class="max-w-3xl mx-auto px-4 py-8">
+  <div id="view-today" class="view active fade-in">
+    <div id="today-content">
 
-<div id="view-today" class="view active fade-in">
-  <div id="today-content">
-    <div id="loading-overlay" class="flex flex-col items-center justify-center py-20 text-center">
-      <div class="loader mb-4"></div>
-      <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
-    </div>
+      <!-- LOADING -->
+      <div id="loading-overlay" class="flex flex-col items-center justify-center py-20 text-center">
+        <div class="loader mb-4"></div>
+        <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
+      </div>
 
-    <div id="entry-form" class="hidden space-y-10">
+      <!-- FORM -->
+      <div id="entry-form" class="hidden space-y-10">
 
-      <!-- Data e Dia da Semana -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
-        <div>
-          <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
-          <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1">01 de Janeiro de 2026</p>
+        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
+          <div>
+            <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
+            <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1">01 de Janeiro de 2026</p>
+          </div>
+          <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
         </div>
-        <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
+
+        <!-- FRASE DO DIA -->
+        <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
+          <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
+          <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"..."</blockquote>
+        </div>
+
+        <!-- CHECK-IN EMOCIONAL -->
+        <section class="space-y-4">
+          <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
+        </section>
+
+        <!-- REFLEXÃO -->
+        <section class="space-y-4">
+          <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
+          <div class="space-y-4" id="questions-container"></div>
+        </section>
+
+        <!-- ESCRITA TERAPÊUTICA -->
+        <section class="space-y-4">
+          <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
+          <textarea id="input-writing" class="input-elegant min-h-[150px]" placeholder="Escreva livremente..."></textarea>
+        </section>
+
+        <!-- AUTOCUIDADO -->
+        <section class="space-y-4">
+          <div class="flex items-center gap-2"><span class="text-xl">💖</span><h3 class="font-serif font-bold text-lg">Autocuidado</h3></div>
+          <textarea id="input-selfcare" class="input-elegant min-h-[100px]" placeholder="Liste suas ações de autocuidado para hoje..."></textarea>
+        </section>
+
+        <!-- ÂNCORA DO DIA -->
+        <section class="space-y-4">
+          <div class="flex items-center gap-2"><span class="text-xl">⚓</span><h3 class="font-serif font-bold text-lg">Âncora do Dia</h3></div>
+          <input type="text" id="input-anchor" class="input-elegant w-full" placeholder="Palavra, frase ou ação que te mantém centrada...">
+        </section>
+
       </div>
-
-      <!-- Frase Inspiradora -->
-      <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
-        <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
-        <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"..."</blockquote>
-      </div>
-
-      <!-- Check-in Emocional -->
-      <section class="space-y-4">
-        <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
-      </section>
-
-      <!-- Reflexão Profunda -->
-      <section class="space-y-4">
-        <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
-        <div class="space-y-4" id="questions-container"></div>
-      </section>
-
-      <!-- Escrita Terapêutica -->
-      <section class="space-y-4">
-        <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
-        <textarea id="input-writing" class="input-elegant min-h-[300px]" placeholder="Escreva livremente..."></textarea>
-      </section>
-
     </div>
   </div>
-</div>
-
 </main>
 
 <script>
-// ===== ESTADO =====
 const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
 const QUESTIONS=[
   "O que sua alma pede hoje?",
@@ -122,106 +135,131 @@ const DAILY_PHRASES=[
   "Liberte-se do que não serve mais."
 ];
 
-let state={
-  selectedDate:new Date().toISOString().split('T')[0],
-  currentEntry:null,
-  entries:JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]')
+// ===== ESTADO =====
+let state = {
+  selectedDate: new Date().toISOString().split('T')[0],
+  currentEntry: null,
+  entries: []
 };
+
+try {
+  const saved = localStorage.getItem('projeto_fenix_data');
+  if(saved) state.entries = JSON.parse(saved);
+} catch(e){
+  localStorage.removeItem('projeto_fenix_data');
+  state.entries = [];
+}
 
 function saveData(){localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));}
 
 function loadDailyEntry(date){
   const loading=document.getElementById('loading-overlay');
   const form=document.getElementById('entry-form');
+  const questionsContainer=document.getElementById('questions-container');
+  const moodContainer=document.getElementById('mood-container');
 
-  let entry=state.entries.find(e=>e.date===date);
+  loading.classList.remove('hidden');
+  form.classList.add('hidden');
+
+  let entry = state.entries.find(e=>e.date===date);
   if(!entry){
-    entry={date,phrase:DAILY_PHRASES[Math.floor(Math.random()*DAILY_PHRASES.length)],questions:QUESTIONS.map(q=>({text:q,answer:''})),mood:''};
+    entry={
+      date,
+      phrase: DAILY_PHRASES[Math.floor(Math.random()*DAILY_PHRASES.length)],
+      questions: QUESTIONS.map(q=>({text:q, answer:''})),
+      mood:'',
+      writing:'',
+      selfcare:'',
+      anchor:''
+    };
     state.entries.push(entry);
     saveData();
   }
-  state.currentEntry=entry;
 
-  document.getElementById('display-phrase').textContent=entry.phrase;
+  state.currentEntry = entry;
 
-  const dateObj=new Date(date);
-  const optionsFull={year:'numeric',month:'long',day:'numeric'};
-  const optionsWeekday={weekday:'long'};
-  document.getElementById('display-full-date').textContent=dateObj.toLocaleDateString('pt-BR',optionsFull);
-  document.getElementById('display-day-name').textContent=dateObj.toLocaleDateString('pt-BR',optionsWeekday);
+  // Datas e frase
+  document.getElementById('display-phrase').textContent = entry.phrase;
+  const dateObj = new Date(date);
+  document.getElementById('display-full-date').textContent = dateObj.toLocaleDateString('pt-BR',{year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('display-day-name').textContent = dateObj.toLocaleDateString('pt-BR',{weekday:'long'});
 
-  const container=document.getElementById('questions-container');
-  container.innerHTML='';
+  // Perguntas
+  questionsContainer.innerHTML='';
   entry.questions.forEach((q,i)=>{
     const card=document.createElement('div');
     card.className='card p-4';
-    const p=document.createElement('p');
-    p.textContent=q.text;
+    const p=document.createElement('p'); p.textContent=q.text;
     const ta=document.createElement('textarea');
-    ta.className='input-elegant w-full';
-    ta.value=q.answer;
+    ta.className='input-elegant w-full'; ta.value=q.answer;
     ta.oninput=e=>{entry.questions[i].answer=e.target.value; saveData();};
-    card.appendChild(p);
-    card.appendChild(ta);
-    container.appendChild(card);
+    card.appendChild(p); card.appendChild(ta); questionsContainer.appendChild(card);
   });
 
-  renderMoods();
-  loading.classList.add('hidden');
-  form.classList.remove('hidden');
-}
-
-function renderMoods(){
-  const container=document.getElementById('mood-container');
-  container.innerHTML='';
+  // Moods
+  moodContainer.innerHTML='';
   MOODS.forEach(m=>{
     const btn=document.createElement('button');
     btn.textContent=m;
     btn.className='btn-mood';
-    if(state.currentEntry.mood===m) btn.classList.add('active');
-    btn.onclick=()=>{state.currentEntry.mood=m; saveData(); renderMoods();};
-    container.appendChild(btn);
+    if(entry.mood===m) btn.classList.add('active');
+    btn.onclick=()=>{
+      entry.mood=m; saveData(); loadDailyEntry(date);
+    };
+    moodContainer.appendChild(btn);
   });
+
+  // Escrita terapêutica
+  document.getElementById('input-writing').value = entry.writing;
+  document.getElementById('input-writing').oninput = e=>{entry.writing=e.target.value; saveData();};
+
+  // Autocuidado
+  document.getElementById('input-selfcare').value = entry.selfcare;
+  document.getElementById('input-selfcare').oninput = e=>{entry.selfcare=e.target.value; saveData();};
+
+  // Âncora do dia
+  document.getElementById('input-anchor').value = entry.anchor;
+  document.getElementById('input-anchor').oninput = e=>{entry.anchor=e.target.value; saveData();};
+
+  loading.classList.add('hidden'); form.classList.remove('hidden');
 }
 
-document.getElementById('date-picker').value=state.selectedDate;
-document.getElementById('date-picker').onchange=e=>{state.selectedDate=e.target.value; loadDailyEntry(state.selectedDate);};
+// Eventos
+document.getElementById('date-picker').value = state.selectedDate;
+document.getElementById('date-picker').onchange = e=>{
+  state.selectedDate = e.target.value;
+  loadDailyEntry(state.selectedDate);
+};
 
-window.addEventListener('DOMContentLoaded',()=>{loadDailyEntry(state.selectedDate);});
+// Inicialização
+window.addEventListener('DOMContentLoaded', ()=>{loadDailyEntry(state.selectedDate);});
 
-// ===== SERVICE WORKER =====
+// Service Worker PWA
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js')
-    .then(reg=>console.log("SW registrado!",reg))
-    .catch(err=>console.error("Erro SW:",err));
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/sw.js').then(reg=>console.log("Service Worker registrado!",reg));
   });
 }
 
-// ===== PWA INSTALL PROMPT =====
+// Botão instalação PWA
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt',(e)=>{
+window.addEventListener('beforeinstallprompt', e=>{
   e.preventDefault();
-  deferredPrompt=e;
-  const installBtn=document.createElement('button');
+  deferredPrompt = e;
+  const installBtn = document.createElement('button');
   installBtn.textContent="📲 Instalar Projeto Fênix";
-  installBtn.style.position="fixed";
-  installBtn.style.bottom="16px";
-  installBtn.style.right="16px";
-  installBtn.style.background="#c67b5c";
-  installBtn.style.color="white";
-  installBtn.style.border="none";
-  installBtn.style.borderRadius="1rem";
-  installBtn.style.padding="0.75rem 1rem";
-  installBtn.style.fontWeight="bold";
+  installBtn.style.position="fixed"; installBtn.style.bottom="16px"; installBtn.style.right="16px";
+  installBtn.style.background="#c67b5c"; installBtn.style.color="white";
+  installBtn.style.border="none"; installBtn.style.borderRadius="1rem";
+  installBtn.style.padding="0.75rem 1rem"; installBtn.style.fontWeight="bold";
   installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
   installBtn.style.cursor="pointer";
   document.body.appendChild(installBtn);
-  installBtn.addEventListener('click',async()=>{
+  installBtn.addEventListener('click', async ()=>{
     installBtn.disabled=true;
     deferredPrompt.prompt();
-    const {outcome}=await deferredPrompt.userChoice;
-    deferredPrompt=null;
+    const {outcome} = await deferredPrompt.userChoice;
+    deferredPrompt = null;
     installBtn.remove();
     if(outcome==='accepted') console.log("Usuário instalou o PWA!");
   });
