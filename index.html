@@ -62,6 +62,7 @@ h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
 
     <div id="entry-form" class="hidden space-y-10">
 
+      <!-- Data e Dia da Semana -->
       <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
         <div>
           <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
@@ -70,21 +71,25 @@ h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
         <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
       </div>
 
+      <!-- Frase Inspiradora -->
       <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
         <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
         <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"..."</blockquote>
       </div>
 
+      <!-- Check-in Emocional -->
       <section class="space-y-4">
         <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
       </section>
 
+      <!-- Reflexão Profunda -->
       <section class="space-y-4">
         <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
         <div class="space-y-4" id="questions-container"></div>
       </section>
 
+      <!-- Escrita Terapêutica -->
       <section class="space-y-4">
         <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
         <textarea id="input-writing" class="input-elegant min-h-[300px]" placeholder="Escreva livremente..."></textarea>
@@ -97,6 +102,7 @@ h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
 </main>
 
 <script>
+// ===== ESTADO =====
 const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
 const QUESTIONS=[
   "O que sua alma pede hoje?",
@@ -186,7 +192,9 @@ window.addEventListener('DOMContentLoaded',()=>{loadDailyEntry(state.selectedDat
 // ===== SERVICE WORKER =====
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js').then(reg=>console.log("Service Worker registrado!",reg));
+    navigator.serviceWorker.register('/sw.js')
+    .then(reg=>console.log("SW registrado!",reg))
+    .catch(err=>console.error("Erro SW:",err));
   });
 }
 
