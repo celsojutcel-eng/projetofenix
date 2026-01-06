@@ -1,5 +1,5 @@
 // ---------------------------
-// script.js - Projeto Fênix PWA Planner (data local corrigida)
+// script.js - Projeto Fênix PWA Planner (data corrigida)
 // ---------------------------
 
 // Retorna data local no formato YYYY-MM-DD
@@ -76,10 +76,11 @@ function loadDailyEntry(date){
 
   state.currentEntry = entry;
 
-  // Datas e frase
+  // Correção da data para evitar dia anterior por fuso horário
   const [y, m, d] = date.split('-').map(Number);
-  const dateObj = new Date(y, m - 1, d, 12); // meio-dia para evitar dia anterior por fuso horário
+  const dateObj = new Date(y, m - 1, d, 12); // hora fixa no meio do dia
 
+  // Datas e frase
   document.getElementById('display-phrase').textContent = entry.phrase;
   document.getElementById('display-full-date').textContent = dateObj.toLocaleDateString('pt-BR',{year:'numeric', month:'long', day:'numeric'});
   document.getElementById('display-day-name').textContent = dateObj.toLocaleDateString('pt-BR',{weekday:'long'});
