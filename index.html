@@ -5,20 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projeto Fênix - Planner 2026</title>
 
-  <!-- Manifest -->
+  <!-- Manifest PWA -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#c67b5c">
 
-  <!-- Fontes e Tailwind -->
+  <!-- Tailwind & Fontes -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* =======================
-       Estilos principais
-    ======================= */
     :root {
       --color-bg: #fdfbf7;
       --color-primary: #c67b5c;
@@ -29,65 +25,20 @@
       --color-border: #e8e2d9;
     }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--color-bg);
-      color: var(--color-text);
-      scroll-behavior: smooth;
-    }
+    body { font-family: 'Inter', sans-serif; background-color: var(--color-bg); color: var(--color-text); scroll-behavior: smooth; }
+    h1,h2,h3,.font-serif { font-family: 'Playfair Display', serif; }
 
-    h1, h2, h3, .font-serif { font-family: 'Playfair Display', serif; }
-
-    .card {
-      background: white;
-      border: 1px solid var(--color-border);
-      border-radius: 1.5rem;
-      box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
-    }
-
-    .input-elegant {
-      background: #fdfbf7;
-      border: 1px solid var(--color-border);
-      border-radius: 1rem;
-      padding: 1rem;
-      width: 100%;
-      transition: all 0.3s ease;
-    }
-
-    .input-elegant:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px rgba(198, 123, 92, 0.1);
-    }
-
-    .btn-mood {
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      border: 1px solid var(--color-border);
-      font-size: 0.875rem;
-      transition: all 0.2s;
-      background: white;
-    }
-
-    .btn-mood.active {
-      background: var(--color-primary);
-      color: white;
-      border-color: var(--color-primary);
-      transform: scale(1.05);
-    }
+    .card { background: white; border: 1px solid var(--color-border); border-radius: 1.5rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05); }
+    .input-elegant { background: #fdfbf7; border: 1px solid var(--color-border); border-radius: 1rem; padding: 1rem; width: 100%; transition: all 0.3s ease; }
+    .input-elegant:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(198, 123, 92, 0.1); }
+    .btn-mood { padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid var(--color-border); font-size: 0.875rem; transition: all 0.2s; background: white; }
+    .btn-mood.active { background: var(--color-primary); color: white; border-color: var(--color-primary); transform: scale(1.05); }
 
     .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    @keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .loader {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid var(--color-primary);
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% {transform:rotate(0deg);} 100% {transform:rotate(360deg);} }
+    .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--color-primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     .view { display: none; }
     .view.active { display: block; }
@@ -104,134 +55,119 @@
         </h1>
         <p class="text-[10px] uppercase tracking-[0.2em] text-[#a89f91] font-bold">Redescubra sua essência diariamente</p>
       </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <button onclick="switchView('today')" class="nav-link text-sm font-bold text-[#c67b5c]" id="nav-today">Diário</button>
+        <button onclick="switchView('history')" class="nav-link text-sm font-medium text-gray-500 hover:text-[#c67b5c]" id="nav-history">Histórico</button>
+        <button onclick="switchView('insights')" class="nav-link text-sm font-medium text-gray-500 hover:text-[#c67b5c]" id="nav-insights">Insights</button>
+      </nav>
     </div>
   </header>
 
-  <!-- Main -->
+  <!-- Main Content -->
   <main class="max-w-3xl mx-auto px-4 py-8">
-    <!-- Aqui entra todo o conteúdo do app -->
-    <!-- Mantenha suas views TODAY, HISTORY, INSIGHTS e entry-form -->
+    <!-- View: TODAY -->
+    <div id="view-today" class="view active fade-in">
+      <div id="today-content">
+        <div id="loading-overlay" class="flex flex-col items-center justify-center py-20 text-center">
+          <div class="loader mb-4"></div>
+          <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
+        </div>
+        <div id="entry-form" class="hidden space-y-10">
+          <!-- Date & Selector -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
+            <div>
+              <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
+              <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1">01 de Janeiro de 2026</p>
+            </div>
+            <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
+          </div>
+          <!-- Phrase Card -->
+          <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
+            <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
+            <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"O renascimento começa com o silêncio."</blockquote>
+          </div>
+          <!-- Mood -->
+          <section class="space-y-4">
+            <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
+          </section>
+          <!-- Reconnection -->
+          <section class="space-y-4">
+            <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
+            <div class="card p-6 md:p-8 space-y-4">
+              <p id="display-question" class="text-[#5d4a44] font-serif italic text-lg leading-relaxed"></p>
+              <textarea id="input-reconnection" class="input-elegant min-h-[100px]" placeholder="Sua alma responde..."></textarea>
+            </div>
+          </section>
+          <!-- Writing -->
+          <section class="space-y-4">
+            <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
+            <div class="relative">
+              <textarea id="input-writing" class="input-elegant min-h-[300px]" placeholder="Escreva livremente, sem filtros..."></textarea>
+              <div id="display-ai-insight" class="mt-4 p-4 bg-[#f0f4f0] border-l-4 border-[#8ba68b] text-[#4a5d4a] text-sm italic rounded-r-xl hidden"></div>
+            </div>
+          </section>
+          <!-- Microaction & Keyword -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <section class="space-y-4"><h3 class="font-serif font-bold">Autocuidado</h3><textarea id="input-selfcare" class="input-elegant h-24" placeholder="Uma pequena ação hoje..."></textarea></section>
+            <section class="space-y-4"><h3 class="font-serif font-bold">Âncora do Dia</h3><input type="text" id="input-keyword" class="input-elegant font-bold text-center text-[#c67b5c] text-lg" placeholder="Ex: Pausa"></section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- View: HISTORY -->
+    <div id="view-history" class="view fade-in">
+      <h2 class="text-3xl font-serif text-gray-800 border-b border-gray-200 pb-4 mb-6">Seu Caminho de Renascimento</h2>
+      <div id="history-list" class="space-y-4"></div>
+    </div>
+    <!-- View: INSIGHTS -->
+    <div id="view-insights" class="view fade-in">
+      <h2 class="text-3xl font-serif text-gray-800 text-center mb-10">O Mapa da sua Alma</h2>
+      <div class="grid md:grid-cols-2 gap-6" id="insights-container"></div>
+    </div>
   </main>
 
   <!-- Feedback de Salva -->
-  <div id="save-indicator" class="fixed bottom-24 right-6 md:bottom-8 bg-white/90 backdrop-blur border border-gray-200 px-4 py-2 rounded-full text-[10px] font-bold text-gray-400 shadow-lg hidden">
+  <div id="save-indicator" class="fixed bottom-24 right-6 md:bottom-8 md:right-8 bg-white/90 backdrop-blur border border-gray-200 px-4 py-2 rounded-full text-[10px] font-bold text-gray-400 shadow-lg hidden">
     Sincronizando com sua essência...
   </div>
 
-  <!-- ===============================
-       JS do App (mantido igual)
-  =============================== -->
+  <!-- Scripts -->
   <script>
-    // Função para pegar a data local no formato yyyy-mm-dd
-    function getLocalDate() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth()+1).padStart(2,'0');
-      const day = String(today.getDate()).padStart(2,'0');
-      return `${year}-${month}-${day}`;
-    }
+  // ===============================
+  // ESTADO GLOBAL (seu JS original)
+  // ===============================
+  function getLocalDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2,'0');
+    const day = String(today.getDate()).padStart(2,'0');
+    return `${year}-${month}-${day}`;
+  }
 
-    let state = {
-      currentView:'today',
-      selectedDate:getLocalDate(),
-      entries:JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
-      currentEntry:null
-    };
+  let state = {
+    currentView:'today',
+    selectedDate:getLocalDate(),
+    entries:JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
+    currentEntry:null
+  };
 
-    const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+  const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+  const FALLBACK_CONTENT = [
+    { phrase:"O renascimento começa quando você se escuta.", question:"O que sua alma pede hoje?" },
+    { phrase:"Seu ritmo também é sagrado.", question:"Onde você pode ser mais gentil consigo?" },
+    { phrase:"Há força no silêncio.", question:"O que precisa de pausa agora?" }
+  ];
 
-    const FALLBACK_CONTENT = [
-      { phrase:"O renascimento começa quando você se escuta.", question:"O que sua alma pede hoje?" },
-      { phrase:"Seu ritmo também é sagrado.", question:"Onde você pode ser mais gentil consigo?" },
-      { phrase:"Há força no silêncio.", question:"O que precisa de pausa agora?" }
-    ];
+  window.addEventListener('DOMContentLoaded',()=>{
+    // Inicialização app
+    loadDailyEntry(state.selectedDate);
+    renderMoods();
+    setupListeners();
 
-    window.onload = () => {
-      loadDailyEntry(state.selectedDate);
-      renderMoods();
-      setupListeners();
-    };
-
-    function switchView(view){
-      state.currentView = view;
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      document.getElementById(`view-${view}`).classList.add('active');
-    }
-
-    function loadDailyEntry(date){
-      const form = document.getElementById('entry-form');
-      const loading = document.getElementById('loading-overlay');
-      let entry = state.entries.find(e=>e.date===date);
-      if(!entry){
-        const r=FALLBACK_CONTENT[Math.floor(Math.random()*FALLBACK_CONTENT.length)];
-        entry={date, phrase:r.phrase, question:r.question, mood:'', reconnection:'', writing:'', selfcare:'', keyword:''};
-        state.entries.push(entry);
-        saveData();
-      }
-      state.currentEntry = entry;
-      populateForm(entry);
-      loading.classList.add('hidden');
-      form.classList.remove('hidden');
-    }
-
-    function populateForm(e){
-      document.getElementById('display-phrase').textContent=`"${e.phrase}"`;
-      document.getElementById('display-question').textContent=e.question;
-    }
-
-    function renderMoods(){
-      const container=document.getElementById('mood-container');
-      container.innerHTML='';
-      MOODS.forEach(mood=>{
-        const btn=document.createElement('button');
-        btn.className='btn-mood';
-        btn.textContent=mood;
-        btn.onclick=()=>{
-          state.currentEntry.mood=mood;
-          saveData();
-          renderMoods();
-        };
-        if(state.currentEntry?.mood===mood) btn.classList.add('active');
-        container.appendChild(btn);
-      });
-    }
-
-    function setupListeners(){
-      document.getElementById('date-picker').value=state.selectedDate;
-      document.getElementById('date-picker').onchange=e=>{
-        state.selectedDate=e.target.value;
-        loadDailyEntry(state.selectedDate);
-      };
-      [['input-reconnection','reconnection'],['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']]
-      .forEach(([id,key])=>{
-        const el=document.getElementById(id);
-        el.oninput=e=>{
-          state.currentEntry[key]=e.target.value;
-          saveData();
-        };
-      });
-    }
-
-    function saveData(){
-      localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));
-    }
-
-    // ===============================
-    // Service Worker
-    // ===============================
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('service-worker.js')
-      .then(()=>console.log('Service Worker registrado!'))
-      .catch(err=>console.log('Erro ao registrar SW:',err));
-    }
-  </script>
-
-  <!-- ===============================
-       Botão PWA customizado
-  =============================== -->
-  <script>
+    // Botão PWA
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e)=>{
+    window.addEventListener('beforeinstallprompt',(e)=>{
       e.preventDefault();
       deferredPrompt=e;
 
@@ -249,18 +185,29 @@
       installBtn.style.fontWeight="bold";
       installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
       installBtn.style.cursor="pointer";
+
       document.body.appendChild(installBtn);
 
-      installBtn.addEventListener('click', async ()=>{
+      installBtn.addEventListener('click',async()=>{
         installBtn.disabled=true;
         deferredPrompt.prompt();
         const {outcome}=await deferredPrompt.userChoice;
-        if(outcome==='accepted') console.log("Usuário aceitou instalar o PWA!");
-        else console.log("Usuário rejeitou instalar o PWA.");
         deferredPrompt=null;
         installBtn.remove();
       });
     });
+  });
+
+  // ===============================
+  // FUNÇÕES ORIGINAIS DO APP
+  // ===============================
+  function switchView(view){state.currentView=view;document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(`view-${view}`).classList.add('active');}
+  function loadDailyEntry(date){const form=document.getElementById('entry-form');const loading=document.getElementById('loading-overlay');let entry=state.entries.find(e=>e.date===date);if(!entry){const r=FALLBACK_CONTENT[Math.floor(Math.random()*FALLBACK_CONTENT.length)];entry={date,phrase:r.phrase,question:r.question,mood:'',reconnection:'',writing:'',selfcare:'',keyword:''};state.entries.push(entry);saveData();}state.currentEntry=entry;populateForm(entry);loading.classList.add('hidden');form.classList.remove('hidden');}
+  function populateForm(e){document.getElementById('display-phrase').textContent=`"${e.phrase}"`;document.getElementById('display-question').textContent=e.question;}
+  function renderMoods(){const container=document.getElementById('mood-container');container.innerHTML='';MOODS.forEach(mood=>{const btn=document.createElement('button');btn.className='btn-mood';btn.textContent=mood;btn.onclick=()=>{state.currentEntry.mood=mood;saveData();renderMoods();};if(state.currentEntry?.mood===mood){btn.classList.add('active');}container.appendChild(btn);});}
+  function setupListeners(){document.getElementById('date-picker').value=state.selectedDate;document.getElementById('date-picker').onchange=e=>{state.selectedDate=e.target.value;loadDailyEntry(state.selectedDate);};[['input-reconnection','reconnection'],['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']].forEach(([id,key])=>{const el=document.getElementById(id);el.oninput=e=>{state.currentEntry[key]=e.target.value;saveData();};});}
+  function saveData(){localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));}
   </script>
+
 </body>
 </html>
