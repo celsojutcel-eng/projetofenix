@@ -339,32 +339,38 @@ function loadDailyEntry(date) {
     const form = document.getElementById('entry-form');
     const loading = document.getElementById('loading-overlay');
 
-    form.classList.add('hidden');
-    loading.classList.remove('hidden');
+    try {
+        form.classList.add('hidden');
+        loading.classList.remove('hidden');
 
-    let entry = state.entries.find(e => e.date === date);
+        let entry = state.entries.find(e => e.date === date);
 
-    if (!entry) {
-        const random = FALLBACK_CONTENT[Math.floor(Math.random() * FALLBACK_CONTENT.length)];
-        entry = {
-            date,
-            phrase: random.phrase,
-            question: random.question,
-            mood: '',
-            reconnection: '',
-            writing: '',
-            selfcare: '',
-            keyword: ''
-        };
-        state.entries.push(entry);
-        saveData();
+        if (!entry) {
+            const random = FALLBACK_CONTENT[Math.floor(Math.random() * FALLBACK_CONTENT.length)];
+            entry = {
+                date,
+                phrase: random.phrase,
+                question: random.question,
+                mood: '',
+                reconnection: '',
+                writing: '',
+                selfcare: '',
+                keyword: ''
+            };
+            state.entries.push(entry);
+            saveData();
+        }
+
+        state.currentEntry = entry;
+        populateForm(entry);
+
+    } catch (err) {
+        console.error('Erro ao carregar o dia:', err);
+    } finally {
+        // 🔒 garante que o app nunca fique travado
+        loading.classList.add('hidden');
+        form.classList.remove('hidden');
     }
-
-    state.currentEntry = entry;
-    populateForm(entry);
-
-    loading.classList.add('hidden');
-    form.classList.remove('hidden');
 }
 
 function populateForm(entry) {
@@ -504,9 +510,23 @@ function setupEventListeners() {
     });
 }
 
-// BOOT
-init();
+// BOOT SEGURO
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        init();
+    } catch (err) {
+        console.error('Erro ao iniciar o app:', err);
+
+        // fallback visual
+        const loading = document.getElementById('loading-overlay');
+        const form = document.getElementById('entry-form');
+        if (loading) loading.classList.add('hidden');
+        if (form) form.classList.remove('hidden');
+    }
+});
+
 </script>
 </body>
 </html>
+
 
