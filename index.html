@@ -1,306 +1,174 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projeto Fênix - Planner 2026</title>
-
-  <!-- Tailwind & Fontes -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --color-bg: #fdfbf7;
-      --color-primary: #c67b5c;
-      --color-secondary: #5d4a44;
-      --color-accent: #8ba68b;
-      --color-text: #3d3d3d;
-      --color-muted: #a89f91;
-      --color-border: #e8e2d9;
-    }
-
-    body { font-family: 'Inter', sans-serif; background-color: var(--color-bg); color: var(--color-text); scroll-behavior: smooth; }
-    h1,h2,h3,.font-serif { font-family: 'Playfair Display', serif; }
-
-    .card { background: white; border: 1px solid var(--color-border); border-radius: 1.5rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05); }
-    .input-elegant { background: #fdfbf7; border: 1px solid var(--color-border); border-radius: 1rem; padding: 1rem; width: 100%; transition: all 0.3s ease; }
-    .input-elegant:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(198, 123, 92, 0.1); }
-    .btn-mood { padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid var(--color-border); font-size: 0.875rem; transition: all 0.2s; background: white; }
-    .btn-mood.active { background: var(--color-primary); color: white; border-color: var(--color-primary); transform: scale(1.05); }
-
-    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--color-primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    .view { display: none; }
-    .view.active { display: block; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projeto Fênix - Planner 2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-bg:#fdfbf7; --color-primary:#c67b5c; --color-secondary:#5d4a44; --color-text:#3d3d3d; --color-border:#e8e2d9;
+}
+body{font-family:'Inter',sans-serif;background:var(--color-bg);color:var(--color-text);scroll-behavior:smooth;}
+h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
+.card{background:white;border:1px solid var(--color-border);border-radius:1.5rem;box-shadow:0 4px 20px -5px rgba(0,0,0,0.05);}
+.input-elegant{background:#fdfbf7;border:1px solid var(--color-border);border-radius:1rem;padding:1rem;width:100%;transition:all 0.3s;}
+.input-elegant:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(198,123,92,0.1);}
+.btn-mood{padding:.75rem 1rem;border-radius:1rem;border:1px solid var(--color-border);font-size:.875rem;background:white;transition:all .2s;}
+.btn-mood.active{background:var(--color-primary);color:white;border-color:var(--color-primary);transform:scale(1.05);}
+.fade-in{animation:fadeIn .4s ease-out forwards;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.loader{border:3px solid #f3f3f3;border-top:3px solid var(--color-primary);border-radius:50%;width:24px;height:24px;animation:spin 1s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.view{display:none;}
+.view.active{display:block;}
+</style>
 </head>
 <body class="pb-24 md:pb-8">
 
-  <!-- Header -->
-  <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#e8e2d9]">
-    <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-      <div class="text-center md:text-left">
-        <h1 class="text-2xl md:text-3xl font-bold text-[#c67b5c]">
-          Projeto Fênix <span class="text-[#a89f91] font-light italic">2026</span>
-        </h1>
-        <p class="text-[10px] uppercase tracking-[0.2em] text-[#a89f91] font-bold">Redescubra sua essência diariamente</p>
-      </div>
-      <nav class="hidden md:flex items-center gap-8">
-        <button onclick="switchView('today')" class="nav-link text-sm font-bold text-[#c67b5c]" id="nav-today">Diário</button>
-        <button onclick="switchView('history')" class="nav-link text-sm font-medium text-gray-500 hover:text-[#c67b5c]" id="nav-history">Histórico</button>
-        <button onclick="switchView('insights')" class="nav-link text-sm font-medium text-gray-500 hover:text-[#c67b5c]" id="nav-insights">Insights</button>
-      </nav>
+<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#e8e2d9]">
+<div class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+  <div class="text-center md:text-left">
+    <h1 class="text-2xl md:text-3xl font-bold text-[#c67b5c]">Projeto Fênix <span class="text-[#a89f91] font-light italic">2026</span></h1>
+    <p class="text-[10px] uppercase tracking-[0.2em] text-[#a89f91] font-bold">Redescubra sua essência diariamente</p>
+  </div>
+</div>
+</header>
+
+<main class="max-w-3xl mx-auto px-4 py-8">
+
+<div id="view-today" class="view active fade-in">
+  <div id="today-content">
+    <div id="loading-overlay" class="flex flex-col items-center justify-center py-20 text-center">
+      <div class="loader mb-4"></div>
+      <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
     </div>
-  </header>
 
-  <!-- Main Content -->
-  <main class="max-w-3xl mx-auto px-4 py-8">
+    <div id="entry-form" class="hidden space-y-10">
 
-    <!-- View: TODAY -->
-    <div id="view-today" class="view active fade-in">
-      <div id="today-content">
-
-        <div id="loading-overlay" class="flex flex-col items-center justify-center py-20 text-center">
-          <div class="loader mb-4"></div>
-          <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
+      <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
+        <div>
+          <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
+          <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1">01 de Janeiro de 2026</p>
         </div>
-
-        <div id="entry-form" class="hidden space-y-10">
-
-          <!-- Date & Selector -->
-          <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
-            <div>
-              <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
-              <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1">01 de Janeiro de 2026</p>
-            </div>
-            <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
-          </div>
-
-          <!-- Phrase Card -->
-          <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
-            <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
-            <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"O renascimento começa com o silêncio."</blockquote>
-          </div>
-
-          <!-- Mood -->
-          <section class="space-y-4">
-            <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
-          </section>
-
-          <!-- Reflexão Profunda (Perguntas) -->
-          <section class="space-y-4">
-            <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
-            <div class="space-y-4" id="questions-container"></div>
-          </section>
-
-          <!-- Escrita Terapêutica -->
-          <section class="space-y-4">
-            <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
-            <div class="relative">
-              <textarea id="input-writing" class="input-elegant min-h-[300px]" placeholder="Escreva livremente, sem filtros..."></textarea>
-            </div>
-          </section>
-
-          <!-- Microaction & Keyword -->
-          <div class="grid md:grid-cols-2 gap-6">
-            <section class="space-y-4">
-              <h3 class="font-serif font-bold">Autocuidado</h3>
-              <textarea id="input-selfcare" class="input-elegant h-24" placeholder="Uma pequena ação hoje..."></textarea>
-            </section>
-            <section class="space-y-4">
-              <h3 class="font-serif font-bold">Âncora do Dia</h3>
-              <input type="text" id="input-keyword" class="input-elegant font-bold text-center text-[#c67b5c] text-lg" placeholder="Ex: Pausa">
-            </section>
-          </div>
-
-        </div>
+        <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
       </div>
-    </div>
 
-    <!-- View: HISTORY -->
-    <div id="view-history" class="view fade-in">
-      <h2 class="text-3xl font-serif text-gray-800 border-b border-gray-200 pb-4 mb-6">Seu Caminho de Renascimento</h2>
-      <div id="history-list" class="space-y-4"></div>
-    </div>
+      <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
+        <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
+        <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"..."</blockquote>
+      </div>
 
-    <!-- View: INSIGHTS -->
-    <div id="view-insights" class="view fade-in">
-      <h2 class="text-3xl font-serif text-gray-800 text-center mb-10">O Mapa da sua Alma</h2>
-      <div class="grid md:grid-cols-2 gap-6" id="insights-container"></div>
-    </div>
+      <section class="space-y-4">
+        <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
+      </section>
 
-  </main>
+      <section class="space-y-4">
+        <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
+        <div class="space-y-4" id="questions-container"></div>
+      </section>
+
+      <section class="space-y-4">
+        <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
+        <textarea id="input-writing" class="input-elegant min-h-[300px]" placeholder="Escreva livremente..."></textarea>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+</main>
 
 <script>
-// ===============================
-// ESTADO GLOBAL
-// ===============================
-function getLocalDate() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2,'0');
-  const day = String(today.getDate()).padStart(2,'0');
-  return `${year}-${month}-${day}`;
-}
-
-let state = {
-  currentView:'today',
-  selectedDate:getLocalDate(),
-  entries:JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
-  currentEntry:null
-};
-
-const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
-const FALLBACK_CONTENT = [
-  { phrase:"O renascimento começa quando você se escuta.", question:"O que sua alma pede hoje?" },
-  { phrase:"Seu ritmo também é sagrado.", question:"Onde você pode ser mais gentil consigo?" },
-  { phrase:"Há força no silêncio.", question:"O que precisa de pausa agora?" }
+const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+const QUESTIONS=[
+  "O que sua alma pede hoje?",
+  "Onde você pode ser mais gentil consigo?",
+  "O que precisa de pausa agora?"
+];
+const DAILY_PHRASES=[
+  "Renove sua energia e desperte sua essência.",
+  "Cada amanhecer é um convite ao autoconhecimento.",
+  "Pequenos passos diários criam grandes transformações.",
+  "O silêncio revela aquilo que palavras não conseguem.",
+  "Respire fundo e sinta seu ritmo interno.",
+  "Gratidão transforma o ordinário em extraordinário.",
+  "Permita-se pausar e ouvir seu coração.",
+  "O reencontro com você começa no agora.",
+  "A coragem surge quando você se escuta.",
+  "Liberte-se do que não serve mais."
 ];
 
-// ===============================
-// INICIALIZAÇÃO
-// ===============================
-window.addEventListener('DOMContentLoaded',()=>{
-  loadDailyEntry(state.selectedDate);
-  renderMoods();
-  setupListeners();
+let state={
+  selectedDate:new Date().toISOString().split('T')[0],
+  currentEntry:null,
+  entries:JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]')
+};
 
-  // ===============================
-  // Botão de instalação PWA
-  // ===============================
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt',(e)=>{
-    e.preventDefault();
-    deferredPrompt = e;
-
-    const installBtn = document.createElement('button');
-    installBtn.textContent = "📲 Instalar Projeto Fênix";
-    installBtn.id = "install-btn";
-    installBtn.style.position="fixed";
-    installBtn.style.bottom="16px";
-    installBtn.style.right="16px";
-    installBtn.style.background="#c67b5c";
-    installBtn.style.color="white";
-    installBtn.style.border="none";
-    installBtn.style.borderRadius="1rem";
-    installBtn.style.padding="0.75rem 1rem";
-    installBtn.style.fontWeight="bold";
-    installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
-    installBtn.style.cursor="pointer";
-
-    document.body.appendChild(installBtn);
-
-    installBtn.addEventListener('click',async()=>{
-      installBtn.disabled=true;
-      deferredPrompt.prompt();
-      const {outcome} = await deferredPrompt.userChoice;
-      deferredPrompt=null;
-      installBtn.remove();
-      if(outcome==='accepted') console.log("Usuário aceitou instalar o PWA!");
-      else console.log("Usuário rejeitou instalar o PWA.");
-    });
-  });
-});
-
-// ===============================
-// FUNÇÕES PRINCIPAIS DO APP
-// ===============================
-function switchView(view){
-  state.currentView=view;
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById(`view-${view}`).classList.add('active');
-}
+function saveData(){localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));}
 
 function loadDailyEntry(date){
-  const form = document.getElementById('entry-form');
-  const loading = document.getElementById('loading-overlay');
+  const loading=document.getElementById('loading-overlay');
+  const form=document.getElementById('entry-form');
 
-  let entry = state.entries.find(e=>e.date===date);
-
+  let entry=state.entries.find(e=>e.date===date);
   if(!entry){
-    const r=FALLBACK_CONTENT[Math.floor(Math.random()*FALLBACK_CONTENT.length)];
-    entry={
-      date,
-      phrase:r.phrase,
-      question:r.question,
-      mood:'',
-      reconnection:'',
-      writing:'',
-      selfcare:'',
-      keyword:''
-    };
+    entry={date,phrase:DAILY_PHRASES[Math.floor(Math.random()*DAILY_PHRASES.length)],questions:QUESTIONS.map(q=>({text:q,answer:''})),mood:''};
     state.entries.push(entry);
     saveData();
   }
-
   state.currentEntry=entry;
-  populateForm(entry);
 
+  document.getElementById('display-phrase').textContent=entry.phrase;
+
+  const dateObj=new Date(date);
+  const optionsFull={year:'numeric',month:'long',day:'numeric'};
+  const optionsWeekday={weekday:'long'};
+  document.getElementById('display-full-date').textContent=dateObj.toLocaleDateString('pt-BR',optionsFull);
+  document.getElementById('display-day-name').textContent=dateObj.toLocaleDateString('pt-BR',optionsWeekday);
+
+  const container=document.getElementById('questions-container');
+  container.innerHTML='';
+  entry.questions.forEach((q,i)=>{
+    const card=document.createElement('div');
+    card.className='card p-4';
+    const p=document.createElement('p');
+    p.textContent=q.text;
+    const ta=document.createElement('textarea');
+    ta.className='input-elegant w-full';
+    ta.value=q.answer;
+    ta.oninput=e=>{entry.questions[i].answer=e.target.value; saveData();};
+    card.appendChild(p);
+    card.appendChild(ta);
+    container.appendChild(card);
+  });
+
+  renderMoods();
   loading.classList.add('hidden');
   form.classList.remove('hidden');
-}
-
-function populateForm(e){
-  // Atualiza frase e pergunta
-  document.getElementById('display-phrase').textContent=`"${e.phrase}"`;
-  document.getElementById('display-question').textContent=e.question;
-
-  // Atualiza data completa e dia da semana
-  const dateObj = new Date(e.date);
-  const optionsFull = { year:'numeric', month:'long', day:'numeric' };
-  const optionsWeekday = { weekday:'long' };
-  const displayFull = dateObj.toLocaleDateString('pt-BR', optionsFull);
-  const displayWeekday = dateObj.toLocaleDateString('pt-BR', optionsWeekday);
-
-  document.getElementById('display-full-date').textContent = displayFull.charAt(0).toUpperCase() + displayFull.slice(1);
-  document.getElementById('display-day-name').textContent = displayWeekday.charAt(0).toUpperCase() + displayWeekday.slice(1);
 }
 
 function renderMoods(){
   const container=document.getElementById('mood-container');
   container.innerHTML='';
-  MOODS.forEach(mood=>{
+  MOODS.forEach(m=>{
     const btn=document.createElement('button');
+    btn.textContent=m;
     btn.className='btn-mood';
-    btn.textContent=mood;
-    btn.onclick=()=>{
-      state.currentEntry.mood=mood;
-      saveData();
-      renderMoods();
-    };
-    if(state.currentEntry?.mood===mood) btn.classList.add('active');
+    if(state.currentEntry.mood===m) btn.classList.add('active');
+    btn.onclick=()=>{state.currentEntry.mood=m; saveData(); renderMoods();};
     container.appendChild(btn);
   });
 }
 
-function setupListeners(){
-  document.getElementById('date-picker').value=state.selectedDate;
-  document.getElementById('date-picker').onchange=e=>{
-    state.selectedDate=e.target.value;
-    loadDailyEntry(state.selectedDate);
-  };
+document.getElementById('date-picker').value=state.selectedDate;
+document.getElementById('date-picker').onchange=e=>{state.selectedDate=e.target.value; loadDailyEntry(state.selectedDate);};
 
-  [['input-reconnection','reconnection'],['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']]
-  .forEach(([id,key])=>{
-    const el=document.getElementById(id);
-    el.oninput=e=>{
-      state.currentEntry[key]=e.target.value;
-      saveData();
-    };
-  });
-}
-
-function saveData(){
-  localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));
-}
+window.addEventListener('DOMContentLoaded',()=>{loadDailyEntry(state.selectedDate);});
 </script>
 
 </body>
