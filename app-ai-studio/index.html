@@ -254,288 +254,259 @@
     </div>
 
     <!-- Scripts de Lógica -->
-    <script type="module">
-        import { GoogleGenAI, Type } from "@google/genai";
+    <script>
+/* ===============================
+   PROJETO FÊNIX – PLANNER 2026
+   Versão SEM IA (GitHub Pages OK)
+================================ */
 
-        // Configuração Gemini
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        
-        // Estado Global
-        let state = {
-            currentView: 'today',
-            selectedDate: new Date().toISOString().split('T')[0],
-            entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
-            currentEntry: null
+let state = {
+    currentView: 'today',
+    selectedDate: new Date().toISOString().split('T')[0],
+    entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
+    currentEntry: null
+};
+
+const MOODS = [
+    'Leve', 'Cansada', 'Inspirada', 'Ansiosa',
+    'Presente', 'Confusa', 'Grata', 'Empoderada'
+];
+
+// Frases e perguntas fallback
+const FALLBACK_CONTENT = [
+    {
+        phrase: "O renascimento começa quando você se escuta.",
+        question: "O que seu corpo e sua alma pedem hoje?"
+    },
+    {
+        phrase: "Toda pausa também é um avanço.",
+        question: "Onde você pode ser mais gentil consigo mesma?"
+    },
+    {
+        phrase: "Você não precisa carregar tudo sozinha.",
+        question: "O que pode ser solto agora?"
+    },
+    {
+        phrase: "Há força na sua sensibilidade.",
+        question: "Que parte sua merece acolhimento hoje?"
+    },
+    {
+        phrase: "Seu ritmo também é sagrado.",
+        question: "Como honrar seu tempo hoje?"
+    }
+];
+
+// ---------------- INIT ----------------
+function init() {
+    renderView();
+    setupEventListeners();
+}
+
+// ---------------- NAV ----------------
+window.switchView = function(viewName) {
+    state.currentView = viewName;
+
+    document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.remove('text-[#c67b5c]', 'border-b-2', 'border-[#c67b5c]', 'pb-1');
+        l.classList.add('text-gray-500');
+    });
+
+    const activeLink = document.getElementById(`nav-${viewName}`);
+    if (activeLink) {
+        activeLink.classList.add('text-[#c67b5c]', 'border-b-2', 'border-[#c67b5c]', 'pb-1');
+        activeLink.classList.remove('text-gray-500');
+    }
+
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(`view-${viewName}`).classList.add('active');
+
+    renderView();
+};
+
+// ---------------- RENDER ----------------
+function renderView() {
+    if (state.currentView === 'today') {
+        loadDailyEntry(state.selectedDate);
+    } else if (state.currentView === 'history') {
+        renderHistory();
+    } else if (state.currentView === 'insights') {
+        renderInsights();
+    }
+}
+
+// ---------------- DAILY ----------------
+function loadDailyEntry(date) {
+    const form = document.getElementById('entry-form');
+    const loading = document.getElementById('loading-overlay');
+
+    form.classList.add('hidden');
+    loading.classList.remove('hidden');
+
+    let entry = state.entries.find(e => e.date === date);
+
+    if (!entry) {
+        const random = FALLBACK_CONTENT[Math.floor(Math.random() * FALLBACK_CONTENT.length)];
+        entry = {
+            date,
+            phrase: random.phrase,
+            question: random.question,
+            mood: '',
+            reconnection: '',
+            writing: '',
+            selfcare: '',
+            keyword: ''
         };
+        state.entries.push(entry);
+        saveData();
+    }
 
-        const MOODS = ['Leve', 'Cansada', 'Inspirada', 'Ansiosa', 'Presente', 'Confusa', 'Grata', 'Empoderada'];
+    state.currentEntry = entry;
+    populateForm(entry);
 
-        // Inicialização
-        function init() {
-            renderView();
-            setupEventListeners();
-        }
+    loading.classList.add('hidden');
+    form.classList.remove('hidden');
+}
 
-        // --- Navegação ---
-        window.switchView = (viewName) => {
-            state.currentView = viewName;
-            
-            // Update UI links
-            document.querySelectorAll('.nav-link').forEach(l => {
-                l.classList.remove('text-[#c67b5c]', 'border-b-2', 'border-[#c67b5c]', 'pb-1');
-                l.classList.add('text-gray-500');
-            });
-            const activeLink = document.getElementById(`nav-${viewName}`);
-            if(activeLink) {
-                activeLink.classList.add('text-[#c67b5c]', 'border-b-2', 'border-[#c67b5c]', 'pb-1');
-                activeLink.classList.remove('text-gray-500');
-            }
+function populateForm(entry) {
+    const d = new Date(entry.date + 'T12:00:00');
 
-            // Show View
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(`view-${viewName}`).classList.add('active');
+    document.getElementById('display-day-name').textContent =
+        d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^./, m => m.toUpperCase());
 
-            renderView();
-        };
+    document.getElementById('display-full-date').textContent =
+        d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-        // --- Renderização de Views ---
-        async function renderView() {
-            if (state.currentView === 'today') {
-                await loadDailyEntry(state.selectedDate);
-            } else if (state.currentView === 'history') {
-                renderHistory();
-            } else if (state.currentView === 'insights') {
-                renderInsights();
-            }
-        }
+    document.getElementById('date-picker').value = entry.date;
+    document.getElementById('display-phrase').textContent = `"${entry.phrase}"`;
+    document.getElementById('display-question').textContent = entry.question;
 
-        // --- Lógica do Diário ---
-        async function loadDailyEntry(date) {
-            const form = document.getElementById('entry-form');
-            const loading = document.getElementById('loading-overlay');
-            
-            form.classList.add('hidden');
-            loading.classList.remove('hidden');
+    document.getElementById('input-reconnection').value = entry.reconnection;
+    document.getElementById('input-writing').value = entry.writing;
+    document.getElementById('input-selfcare').value = entry.selfcare;
+    document.getElementById('input-keyword').value = entry.keyword;
 
-            let entry = state.entries.find(e => e.date === date);
+    const moodContainer = document.getElementById('mood-container');
+    moodContainer.innerHTML = '';
 
-            if (!entry) {
-                // Gerar via IA
-                try {
-                    const prompt = `Gere uma frase curta (max 15 palavras) de renascimento feminino e uma pergunta profunda de reflexão para o dia de hoje. Foco em mulheres 35+ anos.`;
-                    const result = await ai.models.generateContent({
-                        model: "gemini-3-flash-preview",
-                        contents: prompt,
-                        config: {
-                            responseMimeType: "application/json",
-                            responseSchema: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    phrase: { type: Type.STRING },
-                                    question: { type: Type.STRING }
-                                },
-                                required: ["phrase", "question"]
-                            },
-                            systemInstruction: "Você é uma mentora sábia. Use Português do Brasil."
-                        }
-                    });
-
-                    const data = JSON.parse(result.text);
-                    
-                    entry = {
-                        date: date,
-                        phrase: data.phrase,
-                        question: data.question,
-                        mood: '',
-                        reconnection: '',
-                        writing: '',
-                        selfcare: '',
-                        keyword: ''
-                    };
-                    state.entries.push(entry);
-                    saveData();
-                } catch (e) {
-                    entry = {
-                        date: date,
-                        phrase: "A renovação acontece no seu ritmo.",
-                        question: "O que você está pronta para deixar para trás hoje?",
-                        mood: '', reconnection: '', writing: '', selfcare: '', keyword: ''
-                    };
-                }
-            }
-
-            state.currentEntry = entry;
+    MOODS.forEach(m => {
+        const btn = document.createElement('button');
+        btn.className = `btn-mood ${entry.mood === m ? 'active' : ''}`;
+        btn.textContent = m;
+        btn.onclick = () => {
+            entry.mood = m;
+            saveData();
             populateForm(entry);
+        };
+        moodContainer.appendChild(btn);
+    });
+}
 
-            loading.classList.add('hidden');
-            form.classList.remove('hidden');
-        }
+// ---------------- HISTORY ----------------
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    list.innerHTML = '';
 
-        function populateForm(entry) {
-            const d = new Date(entry.date + 'T12:00:00');
-            document.getElementById('display-day-name').textContent = d.toLocaleDateString('pt-BR', { weekday: 'long' }).split('-')[0].charAt(0).toUpperCase() + d.toLocaleDateString('pt-BR', { weekday: 'long' }).slice(1);
-            document.getElementById('display-full-date').textContent = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-            document.getElementById('date-picker').value = entry.date;
-            document.getElementById('display-phrase').textContent = `"${entry.phrase}"`;
-            document.getElementById('display-question').textContent = entry.question;
-            document.getElementById('input-reconnection').value = entry.reconnection;
-            document.getElementById('input-writing').value = entry.writing;
-            document.getElementById('input-selfcare').value = entry.selfcare;
-            document.getElementById('input-keyword').value = entry.keyword;
+    const sorted = [...state.entries].sort((a, b) => b.date.localeCompare(a.date));
 
-            // Moods
-            const moodContainer = document.getElementById('mood-container');
-            moodContainer.innerHTML = '';
-            MOODS.forEach(m => {
-                const btn = document.createElement('button');
-                btn.className = `btn-mood ${entry.mood === m ? 'active' : ''}`;
-                btn.textContent = m;
-                btn.onclick = () => {
-                    entry.mood = m;
-                    saveData();
-                    populateForm(entry);
-                };
-                moodContainer.appendChild(btn);
-            });
-        }
+    if (sorted.length === 0) {
+        list.innerHTML = '<p class="text-center py-10 text-gray-400 italic">Sua história começa aqui...</p>';
+        return;
+    }
 
-        // --- Histórico ---
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            
-            const sorted = [...state.entries].sort((a,b) => b.date.localeCompare(a.date));
+    sorted.forEach(e => {
+        const d = new Date(e.date + 'T12:00:00');
+        const div = document.createElement('div');
+        div.className = 'card p-6 flex justify-between items-center cursor-pointer hover:border-[#c67b5c] transition-all group';
+        div.onclick = () => {
+            state.selectedDate = e.date;
+            switchView('today');
+        };
 
-            if (sorted.length === 0) {
-                list.innerHTML = '<p class="text-center py-10 text-gray-400 italic">Sua história começa aqui...</p>';
-                return;
-            }
+        div.innerHTML = `
+            <div>
+                <p class="text-[10px] font-bold text-[#c67b5c] uppercase">
+                    ${d.toLocaleDateString('pt-BR', { weekday: 'short' })}
+                </p>
+                <h4 class="font-serif text-lg">
+                    ${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
+                </h4>
+                <p class="text-xs text-gray-400 italic line-clamp-1">"${e.phrase}"</p>
+            </div>
+            <span class="text-[10px] bg-[#fdf7f2] px-2 py-1 rounded text-[#c67b5c] font-bold">
+                ${e.mood || 'Sem humor'}
+            </span>
+        `;
+        list.appendChild(div);
+    });
+}
 
-            sorted.forEach(e => {
-                const d = new Date(e.date + 'T12:00:00');
-                const div = document.createElement('div');
-                div.className = 'card p-6 flex justify-between items-center cursor-pointer hover:border-[#c67b5c] transition-all group';
-                div.onclick = () => {
-                    state.selectedDate = e.date;
-                    switchView('today');
-                };
-                div.innerHTML = `
-                    <div>
-                        <p class="text-[10px] font-bold text-[#c67b5c] uppercase">${d.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                        <h4 class="font-serif text-lg">${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}</h4>
-                        <p class="text-xs text-gray-400 line-clamp-1 italic">"${e.phrase}"</p>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                        <span class="text-[10px] bg-[#fdf7f2] px-2 py-1 rounded text-[#c67b5c] font-bold">${e.mood || 'Sem humor'}</span>
-                        <svg class="w-4 h-4 text-gray-300 group-hover:text-[#c67b5c] transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-        }
+// ---------------- INSIGHTS ----------------
+function renderInsights() {
+    const container = document.getElementById('insights-container');
+    container.innerHTML = '';
 
-        // --- Insights ---
-        function renderInsights() {
-            const container = document.getElementById('insights-container');
-            container.innerHTML = '';
+    if (state.entries.length < 2) {
+        container.innerHTML = '<div class="col-span-full text-center py-20 italic text-gray-400">Escreva mais alguns dias para ver seus padrões.</div>';
+        return;
+    }
 
-            if (state.entries.length < 2) {
-                container.innerHTML = '<div class="col-span-full text-center py-20 italic text-gray-400">Escreva mais alguns dias para ver seus padrões.</div>';
-                return;
-            }
+    const moods = {};
+    state.entries.forEach(e => {
+        if (e.mood) moods[e.mood] = (moods[e.mood] || 0) + 1;
+    });
 
-            // Mood Counter
-            const moods = {};
-            state.entries.forEach(e => { if(e.mood) moods[e.mood] = (moods[e.mood] || 0) + 1 });
-            
-            const moodCard = document.createElement('div');
-            moodCard.className = 'card p-8 space-y-6';
-            moodCard.innerHTML = `<h3 class="font-serif text-xl font-bold border-b pb-2">Suas Emoções</h3>`;
-            
-            const moodList = document.createElement('div');
-            moodList.className = 'space-y-3';
-            Object.entries(moods).sort((a,b) => b[1]-a[1]).forEach(([name, count]) => {
-                const percent = (count / state.entries.length) * 100;
-                moodList.innerHTML += `
-                    <div class="space-y-1">
-                        <div class="flex justify-between text-xs font-bold uppercase tracking-widest text-gray-500">
-                            <span>${name}</span>
-                            <span>${count}x</span>
-                        </div>
-                        <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-[#c67b5c] h-full" style="width: ${percent}%"></div>
-                        </div>
-                    </div>
-                `;
-            });
-            moodCard.appendChild(moodList);
-            container.appendChild(moodCard);
+    const moodCard = document.createElement('div');
+    moodCard.className = 'card p-8 space-y-6';
+    moodCard.innerHTML = '<h3 class="font-serif text-xl font-bold border-b pb-2">Suas Emoções</h3>';
 
-            // Words Card
-            const wordCard = document.createElement('div');
-            wordCard.className = 'card p-8 bg-[#f7f0e8]/30 flex flex-col justify-center text-center space-y-4';
-            wordCard.innerHTML = `
-                <h3 class="font-serif text-xl font-bold">Palavras Guia</h3>
-                <div class="flex flex-wrap justify-center gap-2">
-                    ${state.entries.filter(e => e.keyword).map(e => `<span class="px-3 py-1 bg-white border border-[#e8e2d9] rounded-lg text-sm text-[#c67b5c] font-medium">${e.keyword}</span>`).join('')}
+    const list = document.createElement('div');
+    list.className = 'space-y-3';
+
+    Object.entries(moods).forEach(([name, count]) => {
+        const percent = (count / state.entries.length) * 100;
+        list.innerHTML += `
+            <div>
+                <div class="flex justify-between text-xs font-bold uppercase text-gray-500">
+                    <span>${name}</span><span>${count}x</span>
                 </div>
-            `;
-            container.appendChild(wordCard);
-        }
+                <div class="w-full bg-gray-100 h-1.5 rounded-full">
+                    <div class="bg-[#c67b5c] h-full" style="width:${percent}%"></div>
+                </div>
+            </div>
+        `;
+    });
 
-        // --- Persistência ---
-        function saveData() {
-            const indicator = document.getElementById('save-indicator');
-            indicator.classList.remove('hidden');
-            
-            localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
-            
-            setTimeout(() => indicator.classList.add('hidden'), 1000);
-        }
+    moodCard.appendChild(list);
+    container.appendChild(moodCard);
+}
 
-        // --- Eventos ---
-        function setupEventListeners() {
-            // Date Picker
-            document.getElementById('date-picker').onchange = (e) => {
-                state.selectedDate = e.target.value;
-                loadDailyEntry(state.selectedDate);
-            };
+// ---------------- SAVE ----------------
+function saveData() {
+    const indicator = document.getElementById('save-indicator');
+    indicator.classList.remove('hidden');
+    localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
+    setTimeout(() => indicator.classList.add('hidden'), 800);
+}
 
-            // Auto-save inputs
-            ['input-reconnection', 'input-writing', 'input-selfcare', 'input-keyword'].forEach(id => {
-                const el = document.getElementById(id);
-                el.oninput = (e) => {
-                    const key = id.split('-')[1];
-                    state.currentEntry[key] = e.target.value;
-                    saveData();
-                };
-            });
+// ---------------- EVENTS ----------------
+function setupEventListeners() {
+    document.getElementById('date-picker').onchange = e => {
+        state.selectedDate = e.target.value;
+        loadDailyEntry(state.selectedDate);
+    };
 
-            // AI Writing Insights on Blur
-            document.getElementById('input-writing').onblur = async (e) => {
-                const text = e.target.value;
-                if (text.length > 50) {
-                    const display = document.getElementById('display-ai-insight');
-                    display.classList.remove('hidden');
-                    display.innerHTML = '<span class="animate-pulse">Sintonizando insight...</span>';
-                    
-                    try {
-                        const result = await ai.models.generateContent({
-                            model: "gemini-3-flash-preview",
-                            contents: `Analise este desabafo terapêutico e ofereça uma palavra de encorajamento profunda (max 2 frases): "${text}"`,
-                            config: { systemInstruction: "Você é uma terapeuta integrativa gentil. Português do Brasil." }
-                        });
-                        display.innerHTML = `💡 ${result.text}`;
-                    } catch (err) {
-                        display.classList.add('hidden');
-                    }
-                }
-            };
-        }
+    ['input-reconnection', 'input-writing', 'input-selfcare', 'input-keyword'].forEach(id => {
+        document.getElementById(id).oninput = e => {
+            const key = id.split('-')[1];
+            state.currentEntry[key] = e.target.value;
+            saveData();
+        };
+    });
+}
 
-        // Boot
-        init();
-
-    </script>
+// BOOT
+init();
+</script>
 </body>
 </html>
+
