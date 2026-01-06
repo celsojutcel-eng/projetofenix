@@ -137,7 +137,6 @@
 /* ===============================
    ESTADO GLOBAL
 ================================ */
-// Função para pegar a data local no formato yyyy-mm-dd
 function getLocalDate() {
   const today = new Date();
   const year = today.getFullYear();
@@ -186,7 +185,7 @@ function getPhraseForDate(dateStr) {
   const date = new Date(year, month - 1, day); // hora local 00:00
   const startOfYear = new Date(date.getFullYear(), 0, 1); // 1º de janeiro local
   const dayOfYear = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
-  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length]; // Loop se frases < 365
+  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length];
 }
 
 /* ===============================
@@ -196,38 +195,6 @@ window.addEventListener('DOMContentLoaded', () => {
   loadDailyEntry(state.selectedDate);
   renderMoods();
   setupListeners();
-
-  // Botão PWA
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-
-    const installBtn = document.createElement('button');
-    installBtn.textContent = "📲 Instalar Projeto Fênix";
-    installBtn.id = "install-btn";
-    installBtn.style.position = "fixed";
-    installBtn.style.bottom = "16px";
-    installBtn.style.right = "16px";
-    installBtn.style.background = "#c67b5c";
-    installBtn.style.color = "white";
-    installBtn.style.border = "none";
-    installBtn.style.borderRadius = "1rem";
-    installBtn.style.padding = "0.75rem 1rem";
-    installBtn.style.fontWeight = "bold";
-    installBtn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-    installBtn.style.cursor = "pointer";
-
-    document.body.appendChild(installBtn);
-
-    installBtn.addEventListener('click', async () => {
-      installBtn.disabled = true;
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      installBtn.remove();
-    });
-  });
 });
 
 /* ===============================
@@ -246,26 +213,23 @@ function loadDailyEntry(date) {
   const form = document.getElementById('entry-form');
   const loading = document.getElementById('loading-overlay');
 
-  // Atualiza o date picker
   document.getElementById('date-picker').value = date;
 
-  // Atualiza nome do dia e data completa
   const dayNames = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
   const [year, month, day] = date.split('-').map(Number);
   const dateObj = new Date(year, month-1, day);
+
   document.getElementById('display-day-name').textContent = dayNames[dateObj.getDay()];
   document.getElementById('display-full-date').textContent = `${String(day).padStart(2,'0')} de ${dateObj.toLocaleString('pt-BR',{month:'long'})} de ${year}`;
 
-  // Procura entrada existente ou cria nova
   let entry = state.entries.find(e => e.date === date);
 
   if (!entry) {
     entry = {
       date,
       phrase: getPhraseForDate(date),
-      question: QUESTIONS,
+      questions: QUESTIONS.map(q => ({ text: q, answer: '' })), // perguntas com respostas individuais
       mood: '',
-      reconnection: '',
       writing: '',
       selfcare: '',
       keyword: ''
@@ -284,9 +248,33 @@ function loadDailyEntry(date) {
 /* ===============================
    FORM POPULATION
 ================================ */
-function populateForm(e) {
-  document.getElementById('display-phrase').textContent = `"${e.phrase}"`;
-  document.getElementById('display-question').textContent = e.question[0]; // mostra a primeira pergunta
+function populateForm(entry) {
+  // Frase do dia
+  document.getElementById('display-phrase').textContent = `"${entry.phrase}"`;
+
+  // Remove perguntas antigas
+  const reconContainer = document.querySelector('#entry-form section:nth-of-type(2) .card');
+  reconContainer.innerHTML = '';
+
+  // Cria um card para cada pergunta
+  entry.questions.forEach((q, index) => {
+    const card = document.createElement('div');
+    card.className = 'card p-6 md:p-8 space-y-4';
+    const p = document.createElement('p');
+    p.className = 'text-[#5d4a44] font-serif italic text-lg leading-relaxed';
+    p.textContent = q.text;
+    const textarea = document.createElement('textarea');
+    textarea.className = 'input-elegant min-h-[100px]';
+    textarea.placeholder = 'Sua alma responde...';
+    textarea.value = q.answer;
+    textarea.oninput = (e) => {
+      state.currentEntry.questions[index].answer = e.target.value;
+      saveData();
+    };
+    card.appendChild(p);
+    card.appendChild(textarea);
+    reconContainer.appendChild(card);
+  });
 }
 
 /* ===============================
@@ -307,9 +295,7 @@ function renderMoods() {
       renderMoods();
     };
 
-    if (state.currentEntry?.mood === mood) {
-      btn.classList.add('active');
-    }
+    if (state.currentEntry?.mood === mood) btn.classList.add('active');
 
     container.appendChild(btn);
   });
@@ -327,7 +313,6 @@ function setupListeners() {
   };
 
   [
-    ['input-reconnection','reconnection'],
     ['input-writing','writing'],
     ['input-selfcare','selfcare'],
     ['input-keyword','keyword']
@@ -346,8 +331,8 @@ function setupListeners() {
 function saveData() {
   localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
 }
-
 </script>
+
 
 </body>
 </html>
