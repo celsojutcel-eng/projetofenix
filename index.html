@@ -164,53 +164,81 @@
 /* ===============================
    ESTADO GLOBAL
 ================================ */
+// Função para pegar a data local no formato yyyy-mm-dd
+function getLocalDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // mês 0-11
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 let state = {
-  currentView:'today',
-  selectedDate: new Date().toISOString().split('T')[0],
-  entries: JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
-  currentEntry:null
+  currentView: 'today',
+  selectedDate: getLocalDate(), // ✅ usa data local
+  entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
+  currentEntry: null
 };
-const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
-const FALLBACK_CONTENT=[
-  {phrase:"O renascimento começa quando você se escuta.",question:"O que sua alma pede hoje?"},
-  {phrase:"Seu ritmo também é sagrado.",question:"Onde você pode ser mais gentil consigo?"},
-  {phrase:"Há força no silêncio.",question:"O que precisa de pausa agora?"}
+
+const MOODS = [
+  'Leve','Cansada','Inspirada','Ansiosa',
+  'Presente','Confusa','Grata','Empoderada'
+];
+
+const FALLBACK_CONTENT = [
+  { phrase: "O renascimento começa quando você se escuta.", question: "O que sua alma pede hoje?" },
+  { phrase: "Seu ritmo também é sagrado.", question: "Onde você pode ser mais gentil consigo?" },
+  { phrase: "Há força no silêncio.", question: "O que precisa de pausa agora?" }
 ];
 
 /* ===============================
    INICIALIZAÇÃO
 ================================ */
-window.onload=()=>{
-  loadDailyEntry(state.selectedDate); // atualiza currentEntry
-  renderMoods(); 
+window.onload = () => {
+  loadDailyEntry(state.selectedDate); // 1️⃣ cria currentEntry
+  renderMoods();                      // 2️⃣ agora funciona
   setupListeners();
 };
 
 /* ===============================
    VIEW CONTROL
 ================================ */
-function switchView(view){
-  state.currentView=view;
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+function switchView(view) {
+  state.currentView = view;
+
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(`view-${view}`).classList.add('active');
 }
 
 /* ===============================
    DAILY ENTRY
 ================================ */
-function loadDailyEntry(date){
-  const form=document.getElementById('entry-form');
-  const loading=document.getElementById('loading-overlay');
-  let entry=state.entries.find(e=>e.date===date);
-  if(!entry){
-    const r=FALLBACK_CONTENT[Math.floor(Math.random()*FALLBACK_CONTENT.length)];
-    entry={date, phrase:r.phrase, question:r.question, mood:'', reconnection:'', writing:'', selfcare:'', keyword:''};
+function loadDailyEntry(date) {
+  const form = document.getElementById('entry-form');
+  const loading = document.getElementById('loading-overlay');
+
+  let entry = state.entries.find(e => e.date === date);
+
+  if (!entry) {
+    const r = FALLBACK_CONTENT[Math.floor(Math.random() * FALLBACK_CONTENT.length)];
+    entry = {
+      date,
+      phrase: r.phrase,
+      question: r.question,
+      mood: '',
+      reconnection: '',
+      writing: '',
+      selfcare: '',
+      keyword: ''
+    };
     state.entries.push(entry);
     saveData();
   }
-  state.currentEntry=entry;
+
+  state.currentEntry = entry;
+
   populateForm(entry);
-  updateDateDisplay(date);
+
   loading.classList.add('hidden');
   form.classList.remove('hidden');
 }
@@ -218,27 +246,33 @@ function loadDailyEntry(date){
 /* ===============================
    FORM POPULATION
 ================================ */
-function populateForm(e){
-  document.getElementById('display-phrase').textContent=`"${e.phrase}"`;
-  document.getElementById('display-question').textContent=e.question;
+function populateForm(e) {
+  document.getElementById('display-phrase').textContent = `"${e.phrase}"`;
+  document.getElementById('display-question').textContent = e.question;
 }
 
 /* ===============================
    MOODS
 ================================ */
-function renderMoods(){
-  const container=document.getElementById('mood-container');
-  container.innerHTML='';
-  MOODS.forEach(mood=>{
-    const btn=document.createElement('button');
-    btn.className='btn-mood';
-    btn.textContent=mood;
-    btn.onclick=()=>{
-      state.currentEntry.mood=mood;
+function renderMoods() {
+  const container = document.getElementById('mood-container');
+  container.innerHTML = '';
+
+  MOODS.forEach(mood => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-mood';
+    btn.textContent = mood;
+
+    btn.onclick = () => {
+      state.currentEntry.mood = mood;
       saveData();
       renderMoods();
     };
-    if(state.currentEntry?.mood===mood) btn.classList.add('active');
+
+    if (state.currentEntry?.mood === mood) {
+      btn.classList.add('active');
+    }
+
     container.appendChild(btn);
   });
 }
@@ -246,44 +280,35 @@ function renderMoods(){
 /* ===============================
    LISTENERS
 ================================ */
-function setupListeners(){
-  const dateInput=document.getElementById('date-picker');
-  dateInput.value=state.selectedDate;
-  dateInput.onchange=e=>{
-    state.selectedDate=e.target.value;
+function setupListeners() {
+  document.getElementById('date-picker').value = state.selectedDate;
+  document.getElementById('date-picker').onchange = e => {
+    state.selectedDate = e.target.value;
     loadDailyEntry(state.selectedDate);
   };
-  [['input-reconnection','reconnection'],['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']].forEach(([id,key])=>{
-    const el=document.getElementById(id);
-    el.oninput=e=>{
-      state.currentEntry[key]=e.target.value;
+
+  [
+    ['input-reconnection','reconnection'],
+    ['input-writing','writing'],
+    ['input-selfcare','selfcare'],
+    ['input-keyword','keyword']
+  ].forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    el.oninput = e => {
+      state.currentEntry[key] = e.target.value;
       saveData();
     };
   });
 }
 
 /* ===============================
-   DATE DISPLAY
-================================ */
-function updateDateDisplay(date){
-  const d=new Date(date);
-  const options={weekday:'long',year:'numeric',month:'long',day:'numeric'};
-  document.getElementById('display-day-name').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'});
-  document.getElementById('display-full-date').textContent=d.toLocaleDateString('pt-BR',options);
-}
-
-/* ===============================
    STORAGE
 ================================ */
-function saveData(){ localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries)); }
-</script>
-
-<!-- REGISTER SERVICE WORKER PARA PWA -->
-<script>
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").then(reg=>console.log("SW registrado",reg.scope)).catch(err=>console.log("SW falhou",err)));
+function saveData() {
+  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
 }
 </script>
+
 
 </body>
 </html>
