@@ -160,8 +160,9 @@ window.addEventListener('DOMContentLoaded', () => {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('./sw.js')
+      .register('sw.js') // ⚠️ sem ./ e sem /
       .then(() => console.log('Service Worker registrado'))
       .catch(err => console.error('Erro no Service Worker:', err));
   });
 }
+
