@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projeto Fênix - Planner 2026</title>
 
+  <!-- Manifest & PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c67b5c">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
   <!-- Bibliotecas e Fontes -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,81 +26,23 @@
       --color-muted: #a89f91;
       --color-border: #e8e2d9;
     }
-
     body {
       font-family: 'Inter', sans-serif;
       background-color: var(--color-bg);
       color: var(--color-text);
       scroll-behavior: smooth;
     }
-
-    h1, h2, h3, .font-serif {
-      font-family: 'Playfair Display', serif;
-    }
-
-    .card {
-      background: white;
-      border: 1px solid var(--color-border);
-      border-radius: 1.5rem;
-      box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
-    }
-
-    .input-elegant {
-      background: #fdfbf7;
-      border: 1px solid var(--color-border);
-      border-radius: 1rem;
-      padding: 1rem;
-      width: 100%;
-      transition: all 0.3s ease;
-    }
-
-    .input-elegant:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px rgba(198, 123, 92, 0.1);
-    }
-
-    .btn-mood {
-      padding: 0.75rem 1rem;
-      border-radius: 1rem;
-      border: 1px solid var(--color-border);
-      font-size: 0.875rem;
-      transition: all 0.2s;
-      background: white;
-    }
-
-    .btn-mood.active {
-      background: var(--color-primary);
-      color: white;
-      border-color: var(--color-primary);
-      transform: scale(1.05);
-    }
-
-    .fade-in {
-      animation: fadeIn 0.4s ease-out forwards;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .loader {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid var(--color-primary);
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .view { display: none; }
-    .view.active { display: block; }
+    h1,h2,h3,.font-serif { font-family: 'Playfair Display', serif; }
+    .card { background:white; border:1px solid var(--color-border); border-radius:1.5rem; box-shadow:0 4px 20px -5px rgba(0,0,0,0.05); }
+    .input-elegant { background:#fdfbf7; border:1px solid var(--color-border); border-radius:1rem; padding:1rem; width:100%; transition:all 0.3s ease; }
+    .input-elegant:focus { outline:none; border-color: var(--color-primary); box-shadow:0 0 0 3px rgba(198,123,92,0.1); }
+    .btn-mood { padding:0.75rem 1rem; border-radius:1rem; border:1px solid var(--color-border); font-size:0.875rem; transition: all 0.2s; background:white; }
+    .btn-mood.active { background: var(--color-primary); color:white; border-color: var(--color-primary); transform: scale(1.05); }
+    .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .loader { border:3px solid #f3f3f3; border-top:3px solid var(--color-primary); border-radius:50%; width:24px; height:24px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0%{ transform:rotate(0deg); } 100%{ transform:rotate(360deg); } }
+    .view { display:none; } .view.active { display:block; }
   </style>
 </head>
 <body class="pb-24 md:pb-8">
@@ -119,6 +66,7 @@
 
   <!-- Main Content -->
   <main class="max-w-3xl mx-auto px-4 py-8">
+
     <!-- View: TODAY -->
     <div id="view-today" class="view active fade-in">
       <div id="today-content">
@@ -128,21 +76,23 @@
         </div>
 
         <div id="entry-form" class="hidden space-y-10">
+
+          <!-- Date & Selector -->
           <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
             <div>
-              <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
-              <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1">01 de Janeiro de 2026</p>
+              <h2 id="display-day-name" class="text-4xl font-serif text-gray-800"></h2>
+              <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1"></p>
             </div>
             <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
           </div>
 
+          <!-- Phrase Card -->
           <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
             <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
-            <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">
-              "O renascimento começa com o silêncio."
-            </blockquote>
+            <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight"></blockquote>
           </div>
 
+          <!-- Mood -->
           <section class="space-y-4">
             <div class="flex items-center gap-2">
               <span class="text-xl">🌿</span>
@@ -151,6 +101,7 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
           </section>
 
+          <!-- Reconnection -->
           <section class="space-y-4">
             <div class="flex items-center gap-2">
               <span class="text-xl">🪞</span>
@@ -162,6 +113,7 @@
             </div>
           </section>
 
+          <!-- Writing -->
           <section class="space-y-4">
             <div class="flex items-center gap-2">
               <span class="text-xl">✍️</span>
@@ -173,6 +125,7 @@
             </div>
           </section>
 
+          <!-- Microaction & Keyword -->
           <div class="grid md:grid-cols-2 gap-6">
             <section class="space-y-4">
               <h3 class="font-serif font-bold">Autocuidado</h3>
@@ -183,157 +136,154 @@
               <input type="text" id="input-keyword" class="input-elegant font-bold text-center text-[#c67b5c] text-lg" placeholder="Ex: Pausa">
             </section>
           </div>
+
         </div>
       </div>
     </div>
 
-    <!-- View: HISTORY -->
+    <!-- Views History & Insights -->
     <div id="view-history" class="view fade-in">
       <h2 class="text-3xl font-serif text-gray-800 border-b border-gray-200 pb-4 mb-6">Seu Caminho de Renascimento</h2>
       <div id="history-list" class="space-y-4"></div>
     </div>
 
-    <!-- View: INSIGHTS -->
     <div id="view-insights" class="view fade-in">
       <h2 class="text-3xl font-serif text-gray-800 text-center mb-10">O Mapa da sua Alma</h2>
       <div class="grid md:grid-cols-2 gap-6" id="insights-container"></div>
     </div>
-  </main>
 
-  <!-- Navigation Mobile -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3 md:hidden z-50">
-    <button onclick="switchView('today')" class="flex flex-col items-center gap-1 text-[#c67b5c]">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-      <span class="text-[10px] font-bold">Hoje</span>
-    </button>
-    <button onclick="switchView('history')" class="flex flex-col items-center gap-1 text-gray-400">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-      <span class="text-[10px] font-bold">Histórico</span>
-    </button>
-    <button onclick="switchView('insights')" class="flex flex-col items-center gap-1 text-gray-400">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-      <span class="text-[10px] font-bold">Insights</span>
-    </button>
-  </nav>
+  </main>
 
   <!-- Feedback de Salva -->
   <div id="save-indicator" class="fixed bottom-24 right-6 md:bottom-8 md:right-8 bg-white/90 backdrop-blur border border-gray-200 px-4 py-2 rounded-full text-[10px] font-bold text-gray-400 shadow-lg hidden">
     Sincronizando com sua essência...
   </div>
 
-  <!-- ===============================
-       SCRIPTS
-  ================================ -->
+  <!-- Scripts JS -->
   <script>
-    /* ===============================
-       ESTADO GLOBAL
-    ================================= */
-    let state = {
-      currentView: 'today',
-      selectedDate: new Date().toISOString().split('T')[0],
-      entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
-      currentEntry: null
-    };
+/* ===============================
+   ESTADO GLOBAL
+================================ */
+let state = {
+  currentView:'today',
+  selectedDate: new Date().toISOString().split('T')[0],
+  entries: JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
+  currentEntry:null
+};
+const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+const FALLBACK_CONTENT=[
+  {phrase:"O renascimento começa quando você se escuta.",question:"O que sua alma pede hoje?"},
+  {phrase:"Seu ritmo também é sagrado.",question:"Onde você pode ser mais gentil consigo?"},
+  {phrase:"Há força no silêncio.",question:"O que precisa de pausa agora?"}
+];
 
-    const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+/* ===============================
+   INICIALIZAÇÃO
+================================ */
+window.onload=()=>{
+  loadDailyEntry(state.selectedDate); // atualiza currentEntry
+  renderMoods(); 
+  setupListeners();
+};
 
-    const FALLBACK_CONTENT = [
-      { phrase: "O renascimento começa quando você se escuta.", question: "O que sua alma pede hoje?" },
-      { phrase: "Seu ritmo também é sagrado.", question: "Onde você pode ser mais gentil consigo?" },
-      { phrase: "Há força no silêncio.", question: "O que precisa de pausa agora?" }
-    ];
+/* ===============================
+   VIEW CONTROL
+================================ */
+function switchView(view){
+  state.currentView=view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
+}
 
-    window.onload = () => {
-      loadDailyEntry(state.selectedDate);
+/* ===============================
+   DAILY ENTRY
+================================ */
+function loadDailyEntry(date){
+  const form=document.getElementById('entry-form');
+  const loading=document.getElementById('loading-overlay');
+  let entry=state.entries.find(e=>e.date===date);
+  if(!entry){
+    const r=FALLBACK_CONTENT[Math.floor(Math.random()*FALLBACK_CONTENT.length)];
+    entry={date, phrase:r.phrase, question:r.question, mood:'', reconnection:'', writing:'', selfcare:'', keyword:''};
+    state.entries.push(entry);
+    saveData();
+  }
+  state.currentEntry=entry;
+  populateForm(entry);
+  updateDateDisplay(date);
+  loading.classList.add('hidden');
+  form.classList.remove('hidden');
+}
+
+/* ===============================
+   FORM POPULATION
+================================ */
+function populateForm(e){
+  document.getElementById('display-phrase').textContent=`"${e.phrase}"`;
+  document.getElementById('display-question').textContent=e.question;
+}
+
+/* ===============================
+   MOODS
+================================ */
+function renderMoods(){
+  const container=document.getElementById('mood-container');
+  container.innerHTML='';
+  MOODS.forEach(mood=>{
+    const btn=document.createElement('button');
+    btn.className='btn-mood';
+    btn.textContent=mood;
+    btn.onclick=()=>{
+      state.currentEntry.mood=mood;
+      saveData();
       renderMoods();
-      setupListeners();
     };
+    if(state.currentEntry?.mood===mood) btn.classList.add('active');
+    container.appendChild(btn);
+  });
+}
 
-    function switchView(view) {
-      state.currentView = view;
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.getElementById(`view-${view}`).classList.add('active');
-    }
+/* ===============================
+   LISTENERS
+================================ */
+function setupListeners(){
+  const dateInput=document.getElementById('date-picker');
+  dateInput.value=state.selectedDate;
+  dateInput.onchange=e=>{
+    state.selectedDate=e.target.value;
+    loadDailyEntry(state.selectedDate);
+  };
+  [['input-reconnection','reconnection'],['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']].forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    el.oninput=e=>{
+      state.currentEntry[key]=e.target.value;
+      saveData();
+    };
+  });
+}
 
-    function loadDailyEntry(date) {
-      const form = document.getElementById('entry-form');
-      const loading = document.getElementById('loading-overlay');
+/* ===============================
+   DATE DISPLAY
+================================ */
+function updateDateDisplay(date){
+  const d=new Date(date);
+  const options={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  document.getElementById('display-day-name').textContent=d.toLocaleDateString('pt-BR',{weekday:'long'});
+  document.getElementById('display-full-date').textContent=d.toLocaleDateString('pt-BR',options);
+}
 
-      let entry = state.entries.find(e => e.date === date);
+/* ===============================
+   STORAGE
+================================ */
+function saveData(){ localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries)); }
+</script>
 
-      if (!entry) {
-        const r = FALLBACK_CONTENT[Math.floor(Math.random() * FALLBACK_CONTENT.length)];
-        entry = { date, phrase: r.phrase, question: r.question, mood:'', reconnection:'', writing:'', selfcare:'', keyword:'' };
-        state.entries.push(entry);
-        saveData();
-      }
+<!-- REGISTER SERVICE WORKER PARA PWA -->
+<script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").then(reg=>console.log("SW registrado",reg.scope)).catch(err=>console.log("SW falhou",err)));
+}
+</script>
 
-      state.currentEntry = entry;
-      populateForm(entry);
-      updateDateDisplay(entry.date);
-
-      loading.classList.add('hidden');
-      form.classList.remove('hidden');
-    }
-
-    function updateDateDisplay(date) {
-      const dayNameEl = document.getElementById('display-day-name');
-      const fullDateEl = document.getElementById('display-full-date');
-      if (!dayNameEl || !fullDateEl) return;
-
-      const d = new Date(date);
-      const optionsDay = { weekday: 'long' };
-      let dayName = d.toLocaleDateString('pt-BR', optionsDay);
-      dayNameEl.textContent = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-
-      const optionsFull = { day: '2-digit', month: 'long', year: 'numeric' };
-      let fullDate = d.toLocaleDateString('pt-BR', optionsFull);
-      fullDateEl.textContent = fullDate.charAt(0).toUpperCase() + fullDate.slice(1);
-    }
-
-    function populateForm(e) {
-      document.getElementById('display-phrase').textContent = `"${e.phrase}"`;
-      document.getElementById('display-question').textContent = e.question;
-    }
-
-    function renderMoods() {
-      const container = document.getElementById('mood-container');
-      container.innerHTML = '';
-      MOODS.forEach(mood => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-mood';
-        btn.textContent = mood;
-        btn.onclick = () => {
-          state.currentEntry.mood = mood;
-          saveData();
-          renderMoods();
-        };
-        if (state.currentEntry?.mood === mood) btn.classList.add('active');
-        container.appendChild(btn);
-      });
-    }
-
-    function setupListeners() {
-      const datePicker = document.getElementById('date-picker');
-      datePicker.value = state.selectedDate;
-      datePicker.onchange = e => {
-        state.selectedDate = e.target.value;
-        loadDailyEntry(state.selectedDate);
-      };
-
-      [['input-reconnection','reconnection'],['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']]
-      .forEach(([id,key])=>{
-        const el = document.getElementById(id);
-        el.oninput = e=>{
-          state.currentEntry[key] = e.target.value;
-          saveData();
-        };
-      });
-    }
-
-    function saveData() {
-      localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
-    }
-  </script>
 </body>
 </html>
