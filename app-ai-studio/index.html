@@ -241,282 +241,148 @@
     <div id="save-indicator" class="fixed bottom-24 right-6 md:bottom-8 md:right-8 bg-white/90 backdrop-blur border border-gray-200 px-4 py-2 rounded-full text-[10px] font-bold text-gray-400 shadow-lg hidden">
         Sincronizando com sua essência...
     </div>
-
-    <!-- Scripts de Lógica -->
-    <script>
+<script>
 /* ===============================
-   PROJETO FÊNIX – PLANNER 2026
-   Versão SEM IA (GitHub Pages OK)
+   ESTADO GLOBAL
 ================================ */
-
 let state = {
-    currentView: 'today',
-    selectedDate: new Date().toISOString().split('T')[0],
-    entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
-    currentEntry: null
+  currentView: 'today',
+  selectedDate: new Date().toISOString().split('T')[0],
+  entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
+  currentEntry: null
 };
 
 const MOODS = [
-    'Leve', 'Cansada', 'Inspirada', 'Ansiosa',
-    'Presente', 'Confusa', 'Grata', 'Empoderada'
+  'Leve','Cansada','Inspirada','Ansiosa',
+  'Presente','Confusa','Grata','Empoderada'
 ];
 
-// Frases e perguntas fallback
 const FALLBACK_CONTENT = [
-    {
-        phrase: "O renascimento começa quando você se escuta.",
-        question: "O que seu corpo e sua alma pedem hoje?"
-    },
-    {
-        phrase: "Toda pausa também é um avanço.",
-        question: "Onde você pode ser mais gentil consigo mesma?"
-    },
-    {
-        phrase: "Você não precisa carregar tudo sozinha.",
-        question: "O que pode ser solto agora?"
-    },
-    {
-        phrase: "Há força na sua sensibilidade.",
-        question: "Que parte sua merece acolhimento hoje?"
-    },
-    {
-        phrase: "Seu ritmo também é sagrado.",
-        question: "Como honrar seu tempo hoje?"
-    }
+  { phrase: "O renascimento começa quando você se escuta.", question: "O que sua alma pede hoje?" },
+  { phrase: "Seu ritmo também é sagrado.", question: "Onde você pode ser mais gentil consigo?" },
+  { phrase: "Há força no silêncio.", question: "O que precisa de pausa agora?" }
 ];
 
-// ---------------- INIT ----------------
-function init() {
-    renderView();
-    setupEventListeners();
-}
-
-// ---------------- NAV ----------------
-window.switchView = function(viewName) {
-    state.currentView = viewName;
-
-    document.querySelectorAll('.nav-link').forEach(l => {
-        l.classList.remove('text-[#c67b5c]', 'border-b-2', 'border-[#c67b5c]', 'pb-1');
-        l.classList.add('text-gray-500');
-    });
-
-    const activeLink = document.getElementById(`nav-${viewName}`);
-    if (activeLink) {
-        activeLink.classList.add('text-[#c67b5c]', 'border-b-2', 'border-[#c67b5c]', 'pb-1');
-        activeLink.classList.remove('text-gray-500');
-    }
-
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(`view-${viewName}`).classList.add('active');
-
-    renderView();
+/* ===============================
+   INICIALIZAÇÃO
+================================ */
+window.onload = () => {
+  loadDailyEntry(state.selectedDate); // 1️⃣ cria currentEntry
+  renderMoods();                     // 2️⃣ agora funciona
+  setupListeners();
 };
 
-// ---------------- RENDER ----------------
-function renderView() {
-    if (state.currentView === 'today') {
-        loadDailyEntry(state.selectedDate);
-    } else if (state.currentView === 'history') {
-        renderHistory();
-    } else if (state.currentView === 'insights') {
-        renderInsights();
-    }
+/* ===============================
+   VIEW CONTROL
+================================ */
+function switchView(view) {
+  state.currentView = view;
+
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
 }
 
-// ---------------- DAILY ----------------
+/* ===============================
+   DAILY ENTRY
+================================ */
 function loadDailyEntry(date) {
-    const form = document.getElementById('entry-form');
-    const loading = document.getElementById('loading-overlay');
+  const form = document.getElementById('entry-form');
+  const loading = document.getElementById('loading-overlay');
 
-    try {
-        form.classList.add('hidden');
-        loading.classList.remove('hidden');
+  let entry = state.entries.find(e => e.date === date);
 
-        let entry = state.entries.find(e => e.date === date);
+  if (!entry) {
+    const r = FALLBACK_CONTENT[Math.floor(Math.random() * FALLBACK_CONTENT.length)];
+    entry = {
+      date,
+      phrase: r.phrase,
+      question: r.question,
+      mood: '',
+      reconnection: '',
+      writing: '',
+      selfcare: '',
+      keyword: ''
+    };
+    state.entries.push(entry);
+    saveData();
+  }
 
-        if (!entry) {
-            const random = FALLBACK_CONTENT[Math.floor(Math.random() * FALLBACK_CONTENT.length)];
-            entry = {
-                date,
-                phrase: random.phrase,
-                question: random.question,
-                mood: '',
-                reconnection: '',
-                writing: '',
-                selfcare: '',
-                keyword: ''
-            };
-            state.entries.push(entry);
-            saveData();
-        }
+  state.currentEntry = entry;
 
-        state.currentEntry = entry;
-        populateForm(entry);
+  populateForm(entry);
 
-    } catch (err) {
-        console.error('Erro ao carregar o dia:', err);
-    } finally {
-        // 🔒 garante que o app nunca fique travado
-        loading.classList.add('hidden');
-        form.classList.remove('hidden');
-    }
+  loading.classList.add('hidden');
+  form.classList.remove('hidden');
 }
 
-function populateForm(entry) {
-    const d = new Date(entry.date + 'T12:00:00');
-
-    document.getElementById('display-day-name').textContent =
-        d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^./, m => m.toUpperCase());
-
-    document.getElementById('display-full-date').textContent =
-        d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-
-    document.getElementById('date-picker').value = entry.date;
-    document.getElementById('display-phrase').textContent = `"${entry.phrase}"`;
-    document.getElementById('display-question').textContent = entry.question;
-
-    document.getElementById('input-reconnection').value = entry.reconnection;
-    document.getElementById('input-writing').value = entry.writing;
-    document.getElementById('input-selfcare').value = entry.selfcare;
-    document.getElementById('input-keyword').value = entry.keyword;
-
-    const moodContainer = document.getElementById('mood-container');
-    moodContainer.innerHTML = '';
-
-    MOODS.forEach(m => {
-        const btn = document.createElement('button');
-        btn.className = `btn-mood ${entry.mood === m ? 'active' : ''}`;
-        btn.textContent = m;
-        btn.onclick = () => {
-            entry.mood = m;
-            saveData();
-            populateForm(entry);
-        };
-        moodContainer.appendChild(btn);
-    });
+/* ===============================
+   FORM POPULATION
+================================ */
+function populateForm(e) {
+  document.getElementById('display-phrase').textContent = `"${e.phrase}"`;
+  document.getElementById('display-question').textContent = e.question;
 }
 
-// ---------------- HISTORY ----------------
-function renderHistory() {
-    const list = document.getElementById('history-list');
-    list.innerHTML = '';
+/* ===============================
+   MOODS
+================================ */
+function renderMoods() {
+  const container = document.getElementById('mood-container');
+  container.innerHTML = '';
 
-    const sorted = [...state.entries].sort((a, b) => b.date.localeCompare(a.date));
+  MOODS.forEach(mood => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-mood';
+    btn.textContent = mood;
 
-    if (sorted.length === 0) {
-        list.innerHTML = '<p class="text-center py-10 text-gray-400 italic">Sua história começa aqui...</p>';
-        return;
-    }
-
-    sorted.forEach(e => {
-        const d = new Date(e.date + 'T12:00:00');
-        const div = document.createElement('div');
-        div.className = 'card p-6 flex justify-between items-center cursor-pointer hover:border-[#c67b5c] transition-all group';
-        div.onclick = () => {
-            state.selectedDate = e.date;
-            switchView('today');
-        };
-
-        div.innerHTML = `
-            <div>
-                <p class="text-[10px] font-bold text-[#c67b5c] uppercase">
-                    ${d.toLocaleDateString('pt-BR', { weekday: 'short' })}
-                </p>
-                <h4 class="font-serif text-lg">
-                    ${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
-                </h4>
-                <p class="text-xs text-gray-400 italic line-clamp-1">"${e.phrase}"</p>
-            </div>
-            <span class="text-[10px] bg-[#fdf7f2] px-2 py-1 rounded text-[#c67b5c] font-bold">
-                ${e.mood || 'Sem humor'}
-            </span>
-        `;
-        list.appendChild(div);
-    });
-}
-
-// ---------------- INSIGHTS ----------------
-function renderInsights() {
-    const container = document.getElementById('insights-container');
-    container.innerHTML = '';
-
-    if (state.entries.length < 2) {
-        container.innerHTML = '<div class="col-span-full text-center py-20 italic text-gray-400">Escreva mais alguns dias para ver seus padrões.</div>';
-        return;
-    }
-
-    const moods = {};
-    state.entries.forEach(e => {
-        if (e.mood) moods[e.mood] = (moods[e.mood] || 0) + 1;
-    });
-
-    const moodCard = document.createElement('div');
-    moodCard.className = 'card p-8 space-y-6';
-    moodCard.innerHTML = '<h3 class="font-serif text-xl font-bold border-b pb-2">Suas Emoções</h3>';
-
-    const list = document.createElement('div');
-    list.className = 'space-y-3';
-
-    Object.entries(moods).forEach(([name, count]) => {
-        const percent = (count / state.entries.length) * 100;
-        list.innerHTML += `
-            <div>
-                <div class="flex justify-between text-xs font-bold uppercase text-gray-500">
-                    <span>${name}</span><span>${count}x</span>
-                </div>
-                <div class="w-full bg-gray-100 h-1.5 rounded-full">
-                    <div class="bg-[#c67b5c] h-full" style="width:${percent}%"></div>
-                </div>
-            </div>
-        `;
-    });
-
-    moodCard.appendChild(list);
-    container.appendChild(moodCard);
-}
-
-// ---------------- SAVE ----------------
-function saveData() {
-    const indicator = document.getElementById('save-indicator');
-    indicator.classList.remove('hidden');
-    localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
-    setTimeout(() => indicator.classList.add('hidden'), 800);
-}
-
-// ---------------- EVENTS ----------------
-function setupEventListeners() {
-    document.getElementById('date-picker').onchange = e => {
-        state.selectedDate = e.target.value;
-        loadDailyEntry(state.selectedDate);
+    btn.onclick = () => {
+      state.currentEntry.mood = mood;
+      saveData();
+      renderMoods();
     };
 
-    ['input-reconnection', 'input-writing', 'input-selfcare', 'input-keyword'].forEach(id => {
-        document.getElementById(id).oninput = e => {
-            const key = id.split('-')[1];
-            state.currentEntry[key] = e.target.value;
-            saveData();
-        };
-    });
+    if (state.currentEntry?.mood === mood) {
+      btn.classList.add('active');
+    }
+
+    container.appendChild(btn);
+  });
 }
 
-// BOOT SEGURO
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        init();
-    } catch (err) {
-        console.error('Erro ao iniciar o app:', err);
+/* ===============================
+   LISTENERS
+================================ */
+function setupListeners() {
+  document.getElementById('date-picker').value = state.selectedDate;
+  document.getElementById('date-picker').onchange = e => {
+    state.selectedDate = e.target.value;
+    loadDailyEntry(state.selectedDate);
+  };
 
-        // fallback visual
-        const loading = document.getElementById('loading-overlay');
-        const form = document.getElementById('entry-form');
-        if (loading) loading.classList.add('hidden');
-        if (form) form.classList.remove('hidden');
-    }
-});
+  [
+    ['input-reconnection','reconnection'],
+    ['input-writing','writing'],
+    ['input-selfcare','selfcare'],
+    ['input-keyword','keyword']
+  ].forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    el.oninput = e => {
+      state.currentEntry[key] = e.target.value;
+      saveData();
+    };
+  });
+}
 
+/* ===============================
+   STORAGE
+================================ */
+function saveData() {
+  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
+}
 </script>
-</body>
+      </body>
 </html>
+
 
 
 
