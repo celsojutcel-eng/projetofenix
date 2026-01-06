@@ -141,14 +141,14 @@
 function getLocalDate() {
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); // mês 0-11
+  const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
 let state = {
   currentView: 'today',
-  selectedDate: getLocalDate(), // ✅ usa data local
+  selectedDate: getLocalDate(),
   entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
   currentEntry: null
 };
@@ -177,19 +177,17 @@ const DAILY_PHRASES = [
   "O reencontro com você começa no agora.",
   "A coragem surge quando você se escuta.",
   "Liberte-se do que não serve mais.",
-  // ... continue até ter 365 frases diferentes
+  // ... complete até ter 365 frases diferentes
 ];
 
-/* ===============================
-   FUNÇÃO PARA OBTER FRASE DO DIA
-   COM FUSO HORÁRIO CORRETO
-================================ */
+// Função para obter a frase do dia baseado na data
 function getPhraseForDate(dateStr) {
-  const parts = dateStr.split('-'); // "yyyy-mm-dd"
-  const date = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2])); // hora local 00:00
-  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  // dateStr = "yyyy-mm-dd"
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day); // hora local 00:00
+  const startOfYear = new Date(date.getFullYear(), 0, 1); // 1º de janeiro local
   const dayOfYear = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
-  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length]; // Loop se frases < 365
+  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length];
 }
 
 /* ===============================
@@ -340,5 +338,6 @@ function saveData() {
   localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
 }
 </script>
+
 </body>
 </html>
