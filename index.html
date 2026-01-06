@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Projeto Fênix - Planner 2026</title>
 
-  <!-- Manifest PWA -->
-  <link rel="manifest" href="manifest.json">
-
   <!-- Tailwind & Fontes -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,6 +62,7 @@
 
   <!-- Main Content -->
   <main class="max-w-3xl mx-auto px-4 py-8">
+
     <!-- View: TODAY -->
     <div id="view-today" class="view active fade-in">
       <div id="today-content">
@@ -72,7 +70,9 @@
           <div class="loader mb-4"></div>
           <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
         </div>
+
         <div id="entry-form" class="hidden space-y-10">
+
           <!-- Date & Selector -->
           <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
             <div>
@@ -81,56 +81,62 @@
             </div>
             <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
           </div>
+
           <!-- Phrase Card -->
           <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
             <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
             <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"O renascimento começa com o silêncio."</blockquote>
           </div>
+
           <!-- Mood -->
           <section class="space-y-4">
             <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
           </section>
-          <!-- Reconnection -->
+
+          <!-- Reflexão Profunda (Perguntas Fixas) -->
           <section class="space-y-4">
             <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
-            <div class="card p-6 md:p-8 space-y-4">
-              <p id="display-question" class="text-[#5d4a44] font-serif italic text-lg leading-relaxed"></p>
-              <textarea id="input-reconnection" class="input-elegant min-h-[100px]" placeholder="Sua alma responde..."></textarea>
-            </div>
+            <div class="space-y-4" id="questions-container"></div>
           </section>
-          <!-- Writing -->
+
+          <!-- Escrita Terapêutica -->
           <section class="space-y-4">
             <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
             <div class="relative">
               <textarea id="input-writing" class="input-elegant min-h-[300px]" placeholder="Escreva livremente, sem filtros..."></textarea>
-              <div id="display-ai-insight" class="mt-4 p-4 bg-[#f0f4f0] border-l-4 border-[#8ba68b] text-[#4a5d4a] text-sm italic rounded-r-xl hidden"></div>
             </div>
           </section>
+
           <!-- Microaction & Keyword -->
           <div class="grid md:grid-cols-2 gap-6">
-            <section class="space-y-4"><h3 class="font-serif font-bold">Autocuidado</h3><textarea id="input-selfcare" class="input-elegant h-24" placeholder="Uma pequena ação hoje..."></textarea></section>
-            <section class="space-y-4"><h3 class="font-serif font-bold">Âncora do Dia</h3><input type="text" id="input-keyword" class="input-elegant font-bold text-center text-[#c67b5c] text-lg" placeholder="Ex: Pausa"></section>
+            <section class="space-y-4">
+              <h3 class="font-serif font-bold">Autocuidado</h3>
+              <textarea id="input-selfcare" class="input-elegant h-24" placeholder="Uma pequena ação hoje..."></textarea>
+            </section>
+            <section class="space-y-4">
+              <h3 class="font-serif font-bold">Âncora do Dia</h3>
+              <input type="text" id="input-keyword" class="input-elegant font-bold text-center text-[#c67b5c] text-lg" placeholder="Ex: Pausa">
+            </section>
           </div>
+
         </div>
       </div>
     </div>
+
     <!-- View: HISTORY -->
     <div id="view-history" class="view fade-in">
       <h2 class="text-3xl font-serif text-gray-800 border-b border-gray-200 pb-4 mb-6">Seu Caminho de Renascimento</h2>
       <div id="history-list" class="space-y-4"></div>
     </div>
+
     <!-- View: INSIGHTS -->
     <div id="view-insights" class="view fade-in">
       <h2 class="text-3xl font-serif text-gray-800 text-center mb-10">O Mapa da sua Alma</h2>
       <div class="grid md:grid-cols-2 gap-6" id="insights-container"></div>
     </div>
-  </main>
 
-  <!-- Feedback de Salva -->
-  <div id="save-indicator" class="fixed bottom-24 right-6 md:bottom-8 md:right-8 bg-white/90 backdrop-blur border border-gray-200 px-4 py-2 rounded-full text-[10px] font-bold text-gray-400 shadow-lg hidden">
-    Sincronizando com sua essência...
-  </div>
+  </main>
 
   <!-- Scripts -->
 <script>
@@ -152,19 +158,14 @@ let state = {
   currentEntry: null
 };
 
-const MOODS = [
-  'Leve','Cansada','Inspirada','Ansiosa',
-  'Presente','Confusa','Grata','Empoderada'
-];
+const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
 
-// Perguntas fixas para todos os dias
 const QUESTIONS = [
   "O que sua alma pede hoje?",
   "Onde você pode ser mais gentil consigo?",
   "O que precisa de pausa agora?"
 ];
 
-// Frases do dia (uma diferente para cada dia do ano)
 const DAILY_PHRASES = [
   "Renove sua energia e desperte sua essência.",
   "Cada amanhecer é um convite ao autoconhecimento.",
@@ -176,39 +177,19 @@ const DAILY_PHRASES = [
   "O reencontro com você começa no agora.",
   "A coragem surge quando você se escuta.",
   "Liberte-se do que não serve mais.",
-  // ... complete até ter 365 frases diferentes
 ];
 
-// Função para obter a frase do dia baseado na data
+/* ===============================
+   FUNÇÕES PRINCIPAIS
+================================ */
 function getPhraseForDate(dateStr) {
   const [year, month, day] = dateStr.split('-').map(Number);
-  const date = new Date(year, month - 1, day); // hora local 00:00
-  const startOfYear = new Date(date.getFullYear(), 0, 1); // 1º de janeiro local
-  const dayOfYear = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
+  const date = new Date(year, month - 1, day);
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((date - startOfYear) / (1000*60*60*24));
   return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length];
 }
 
-/* ===============================
-   INICIALIZAÇÃO
-================================ */
-window.addEventListener('DOMContentLoaded', () => {
-  loadDailyEntry(state.selectedDate);
-  renderMoods();
-  setupListeners();
-});
-
-/* ===============================
-   VIEW CONTROL
-================================ */
-function switchView(view) {
-  state.currentView = view;
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(`view-${view}`).classList.add('active');
-}
-
-/* ===============================
-   DAILY ENTRY
-================================ */
 function loadDailyEntry(date) {
   const form = document.getElementById('entry-form');
   const loading = document.getElementById('loading-overlay');
@@ -223,16 +204,15 @@ function loadDailyEntry(date) {
   document.getElementById('display-full-date').textContent = `${String(day).padStart(2,'0')} de ${dateObj.toLocaleString('pt-BR',{month:'long'})} de ${year}`;
 
   let entry = state.entries.find(e => e.date === date);
-
-  if (!entry) {
+  if(!entry) {
     entry = {
       date,
       phrase: getPhraseForDate(date),
-      questions: QUESTIONS.map(q => ({ text: q, answer: '' })), // perguntas com respostas individuais
+      questions: QUESTIONS.map(q => ({text:q, answer:''})),
       mood: '',
-      writing: '',
-      selfcare: '',
-      keyword: ''
+      writing:'',
+      selfcare:'',
+      keyword:''
     };
     state.entries.push(entry);
     saveData();
@@ -245,35 +225,32 @@ function loadDailyEntry(date) {
   form.classList.remove('hidden');
 }
 
-/* ===============================
-   FORM POPULATION
-================================ */
 function populateForm(entry) {
-  // Frase do dia
   document.getElementById('display-phrase').textContent = `"${entry.phrase}"`;
 
-  // Remove perguntas antigas
-  const reconContainer = document.querySelector('#entry-form section:nth-of-type(2) .card');
-  reconContainer.innerHTML = '';
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
 
-  // Cria um card para cada pergunta
-  entry.questions.forEach((q, index) => {
+  entry.questions.forEach((q,index)=>{
     const card = document.createElement('div');
-    card.className = 'card p-6 md:p-8 space-y-4';
+    card.className = 'card p-4 md:p-6 space-y-2';
+
     const p = document.createElement('p');
-    p.className = 'text-[#5d4a44] font-serif italic text-lg leading-relaxed';
+    p.className = 'text-[#5d4a44] font-serif italic text-lg';
     p.textContent = q.text;
+
     const textarea = document.createElement('textarea');
-    textarea.className = 'input-elegant min-h-[100px]';
-    textarea.placeholder = 'Sua alma responde...';
+    textarea.className = 'input-elegant min-h-[100px] w-full';
     textarea.value = q.answer;
-    textarea.oninput = (e) => {
+    textarea.placeholder = 'Sua alma responde...';
+    textarea.oninput = (e)=>{
       state.currentEntry.questions[index].answer = e.target.value;
       saveData();
     };
+
     card.appendChild(p);
     card.appendChild(textarea);
-    reconContainer.appendChild(card);
+    container.appendChild(card);
   });
 }
 
@@ -283,20 +260,16 @@ function populateForm(entry) {
 function renderMoods() {
   const container = document.getElementById('mood-container');
   container.innerHTML = '';
-
-  MOODS.forEach(mood => {
+  MOODS.forEach(mood=>{
     const btn = document.createElement('button');
-    btn.className = 'btn-mood';
-    btn.textContent = mood;
-
-    btn.onclick = () => {
-      state.currentEntry.mood = mood;
+    btn.className='btn-mood';
+    btn.textContent=mood;
+    btn.onclick=()=>{
+      state.currentEntry.mood=mood;
       saveData();
       renderMoods();
     };
-
-    if (state.currentEntry?.mood === mood) btn.classList.add('active');
-
+    if(state.currentEntry?.mood===mood) btn.classList.add('active');
     container.appendChild(btn);
   });
 }
@@ -307,7 +280,7 @@ function renderMoods() {
 function setupListeners() {
   const datePicker = document.getElementById('date-picker');
   datePicker.value = state.selectedDate;
-  datePicker.onchange = (e) => {
+  datePicker.onchange = (e)=>{
     state.selectedDate = e.target.value;
     loadDailyEntry(state.selectedDate);
   };
@@ -317,22 +290,32 @@ function setupListeners() {
     ['input-selfcare','selfcare'],
     ['input-keyword','keyword']
   ].forEach(([id,key])=>{
-    const el = document.getElementById(id);
-    el.oninput = (e)=>{
-      state.currentEntry[key] = e.target.value;
+    const el=document.getElementById(id);
+    el.oninput=(e)=>{
+      state.currentEntry[key]=e.target.value;
       saveData();
     };
   });
 }
 
-/* ===============================
-   STORAGE
-================================ */
 function saveData() {
-  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
+  localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));
 }
+
+function switchView(view){
+  state.currentView=view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
+}
+
+/* ===============================
+   INICIALIZAÇÃO
+================================ */
+window.addEventListener('DOMContentLoaded',()=>{
+  loadDailyEntry(state.selectedDate);
+  renderMoods();
+  setupListeners();
+});
 </script>
-
-
 </body>
 </html>
