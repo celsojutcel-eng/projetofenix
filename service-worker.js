@@ -1,10 +1,14 @@
-const CACHE_NAME = 'projeto-fenix-v1';
+const CACHE_NAME = 'projeto-fenix-v2';
+
+const BASE_PATH = '/projetofenix';
+
 const FILES_TO_CACHE = [
-  '/',                 // raiz
-  '/index.html',       // seu HTML principal
-  '/manifest.json',    // manifesto do PWA
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  `${BASE_PATH}/`,
+  `${BASE_PATH}/index.html`,
+  `${BASE_PATH}/manifest.json`,
+  `${BASE_PATH}/script.js`,
+  `${BASE_PATH}/icons/icon-192.png`,
+  `${BASE_PATH}/icons/icon-512.png`
 ];
 
 // ===============================
@@ -40,24 +44,30 @@ self.addEventListener('activate', event => {
 // FETCH
 // ===============================
 self.addEventListener('fetch', event => {
-  // ignora requests de terceiros (ex: Google Fonts)
+  // ignora recursos externos (CDN, Google Fonts etc)
   if (!event.request.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
     caches.match(event.request)
-      .then(cachedResp => {
-        return cachedResp || fetch(event.request)
-          .then(fetchResp => {
-            return caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, fetchResp.clone());
-              return fetchResp;
+      .then(cached => {
+        if (cached) return cached;
+
+        return fetch(event.request)
+          .then(response => {
+            if (!response || response.status !== 200) return response;
+
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
             });
+
+            return response;
           });
       })
       .catch(() => {
-        // fallback se der erro (opcional)
+        // fallback de navegação offline
         if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
+          return caches.match(`${BASE_PATH}/index.html`);
         }
       })
   );
