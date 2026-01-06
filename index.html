@@ -66,6 +66,7 @@
     <!-- View: TODAY -->
     <div id="view-today" class="view active fade-in">
       <div id="today-content">
+
         <div id="loading-overlay" class="flex flex-col items-center justify-center py-20 text-center">
           <div class="loader mb-4"></div>
           <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
@@ -94,7 +95,7 @@
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
           </section>
 
-          <!-- Reflexão Profunda (Perguntas Fixas) -->
+          <!-- Reflexão Profunda (Perguntas) -->
           <section class="space-y-4">
             <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
             <div class="space-y-4" id="questions-container"></div>
@@ -138,41 +139,25 @@
 
   </main>
 
-  <!-- Scripts -->
 <script>
 /* ===============================
    ESTADO GLOBAL
 ================================ */
-// Função para pegar a data local no formato yyyy-mm-dd
 function getLocalDate() {
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return today.toISOString().split('T')[0]; // yyyy-mm-dd
 }
 
 let state = {
-  currentView: 'today',
-  selectedDate: getLocalDate(),
-  entries: JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]'),
-  currentEntry: null
+  currentView:'today',
+  selectedDate:getLocalDate(),
+  entries: JSON.parse(localStorage.getItem('projeto_fenix_data')||'[]'),
+  currentEntry:null
 };
 
-const MOODS = [
-  'Leve','Cansada','Inspirada','Ansiosa',
-  'Presente','Confusa','Grata','Empoderada'
-];
-
-// Perguntas fixas para todos os dias
-const QUESTIONS = [
-  "O que sua alma pede hoje?",
-  "Onde você pode ser mais gentil consigo?",
-  "O que precisa de pausa agora?"
-];
-
-// Frases do dia (uma diferente para cada dia do ano)
-const DAILY_PHRASES = [
+const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+const QUESTIONS=["O que sua alma pede hoje?","Onde você pode ser mais gentil consigo?","O que precisa de pausa agora?"];
+const DAILY_PHRASES=[
   "Renove sua energia e desperte sua essência.",
   "Cada amanhecer é um convite ao autoconhecimento.",
   "Pequenos passos diários criam grandes transformações.",
@@ -182,181 +167,147 @@ const DAILY_PHRASES = [
   "Permita-se pausar e ouvir seu coração.",
   "O reencontro com você começa no agora.",
   "A coragem surge quando você se escuta.",
-  "Liberte-se do que não serve mais.",
-  // ... complete até ter 365 frases diferentes
+  "Liberte-se do que não serve mais."
 ];
 
-// Função para obter a frase do dia baseado na data
-function getPhraseForDate(dateStr) {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const date = new Date(year, month - 1, day); // hora local 00:00
-  const startOfYear = new Date(date.getFullYear(), 0, 1); // 1º de janeiro local
-  const dayOfYear = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
-  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length]; // Loop se frases < 365
+/* ===============================
+   FUNÇÕES PRINCIPAIS
+================================ */
+function getPhraseForDate(dateStr){
+  const [y,m,d]=dateStr.split('-').map(Number);
+  const date=new Date(y,m-1,d);
+  const start=new Date(y,0,1);
+  const dayOfYear=Math.floor((date-start)/(1000*60*60*24));
+  return DAILY_PHRASES[dayOfYear % DAILY_PHRASES.length];
 }
 
-/* ===============================
-   INICIALIZAÇÃO
-================================ */
-window.addEventListener('DOMContentLoaded', () => {
-  loadDailyEntry(state.selectedDate);
-  renderMoods();
-  setupListeners();
+function loadDailyEntry(date){
+  const form=document.getElementById('entry-form');
+  const loading=document.getElementById('loading-overlay');
 
-  // Botão PWA
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
+  document.getElementById('date-picker').value=date;
 
-    const installBtn = document.createElement('button');
-    installBtn.textContent = "📲 Instalar Projeto Fênix";
-    installBtn.id = "install-btn";
-    installBtn.style.position = "fixed";
-    installBtn.style.bottom = "16px";
-    installBtn.style.right = "16px";
-    installBtn.style.background = "#c67b5c";
-    installBtn.style.color = "white";
-    installBtn.style.border = "none";
-    installBtn.style.borderRadius = "1rem";
-    installBtn.style.padding = "0.75rem 1rem";
-    installBtn.style.fontWeight = "bold";
-    installBtn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-    installBtn.style.cursor = "pointer";
+  const dayNames=["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+  const [y,m,d]=date.split('-').map(Number);
+  const dateObj=new Date(y,m-1,d);
 
-    document.body.appendChild(installBtn);
+  document.getElementById('display-day-name').textContent=dayNames[dateObj.getDay()];
+  document.getElementById('display-full-date').textContent=`${String(d).padStart(2,'0')} de ${dateObj.toLocaleString('pt-BR',{month:'long'})} de ${y}`;
 
-    installBtn.addEventListener('click', async () => {
-      installBtn.disabled = true;
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      installBtn.remove();
-    });
-  });
-});
-
-/* ===============================
-   VIEW CONTROL
-================================ */
-function switchView(view) {
-  state.currentView = view;
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(`view-${view}`).classList.add('active');
-}
-
-/* ===============================
-   DAILY ENTRY
-================================ */
-function loadDailyEntry(date) {
-  const form = document.getElementById('entry-form');
-  const loading = document.getElementById('loading-overlay');
-
-  // Atualiza date picker
-  document.getElementById('date-picker').value = date;
-
-  // Atualiza nome do dia e data completa
-  const dayNames = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
-  const [year, month, day] = date.split('-').map(Number);
-  const dateObj = new Date(year, month-1, day);
-
-  document.getElementById('display-day-name').textContent = dayNames[dateObj.getDay()];
-  document.getElementById('display-full-date').textContent = `${String(day).padStart(2,'0')} de ${dateObj.toLocaleString('pt-BR',{month:'long'})} de ${year}`;
-
-  // Procura entrada existente ou cria nova
-  let entry = state.entries.find(e => e.date === date);
-
-  if (!entry) {
-    entry = {
+  let entry=state.entries.find(e=>e.date===date);
+  if(!entry){
+    entry={
       date,
-      phrase: getPhraseForDate(date),
-      question: QUESTIONS,
-      mood: '',
-      reconnection: '',
-      writing: '',
-      selfcare: '',
-      keyword: ''
+      phrase:getPhraseForDate(date),
+      questions:QUESTIONS.map(q=>({text:q, answer:''})),
+      mood:'',
+      writing:'',
+      selfcare:'',
+      keyword:''
     };
     state.entries.push(entry);
     saveData();
   }
-
-  state.currentEntry = entry;
+  state.currentEntry=entry;
   populateForm(entry);
+  renderMoods();
 
   loading.classList.add('hidden');
   form.classList.remove('hidden');
 }
 
-/* ===============================
-   FORM POPULATION
-================================ */
-function populateForm(e) {
-  // Frase do dia
-  document.getElementById('display-phrase').textContent = `"${e.phrase}"`;
+function populateForm(entry){
+  document.getElementById('display-phrase').textContent=`"${entry.phrase}"`;
 
-  // Mostra todas as três perguntas fixas
-  const questionEl = document.getElementById('display-question');
-  questionEl.innerHTML = e.question.map(q => `• ${q}`).join('<br>');
+  const container=document.getElementById('questions-container');
+  container.innerHTML='';
+  entry.questions.forEach((q,index)=>{
+    const card=document.createElement('div');
+    card.className='card p-4 md:p-6 space-y-2';
+
+    const p=document.createElement('p');
+    p.className='text-[#5d4a44] font-serif italic text-lg';
+    p.textContent=q.text;
+
+    const textarea=document.createElement('textarea');
+    textarea.className='input-elegant min-h-[100px] w-full';
+    textarea.value=q.answer;
+    textarea.placeholder='Sua alma responde...';
+    textarea.oninput=(e)=>{state.currentEntry.questions[index].answer=e.target.value; saveData();};
+
+    card.appendChild(p);
+    card.appendChild(textarea);
+    container.appendChild(card);
+  });
 }
 
-/* ===============================
-   MOODS
-================================ */
-function renderMoods() {
-  const container = document.getElementById('mood-container');
-  container.innerHTML = '';
-
-  MOODS.forEach(mood => {
-    const btn = document.createElement('button');
-    btn.className = 'btn-mood';
-    btn.textContent = mood;
-
-    btn.onclick = () => {
-      state.currentEntry.mood = mood;
-      saveData();
-      renderMoods();
-    };
-
-    if (state.currentEntry?.mood === mood) {
-      btn.classList.add('active');
-    }
-
+function renderMoods(){
+  const container=document.getElementById('mood-container');
+  container.innerHTML='';
+  MOODS.forEach(m=>{
+    const btn=document.createElement('button');
+    btn.className='btn-mood';
+    btn.textContent=m;
+    btn.onclick=()=>{state.currentEntry.mood=m; saveData(); renderMoods();};
+    if(state.currentEntry?.mood===m) btn.classList.add('active');
     container.appendChild(btn);
   });
 }
 
-/* ===============================
-   LISTENERS
-================================ */
-function setupListeners() {
-  const datePicker = document.getElementById('date-picker');
-  datePicker.value = state.selectedDate;
-  datePicker.onchange = (e) => {
-    state.selectedDate = e.target.value;
-    loadDailyEntry(state.selectedDate);
-  };
+function setupListeners(){
+  const datePicker=document.getElementById('date-picker');
+  datePicker.value=state.selectedDate;
+  datePicker.onchange=(e)=>{state.selectedDate=e.target.value; loadDailyEntry(state.selectedDate);};
 
-  [
-    ['input-reconnection','reconnection'],
-    ['input-writing','writing'],
-    ['input-selfcare','selfcare'],
-    ['input-keyword','keyword']
-  ].forEach(([id,key])=>{
-    const el = document.getElementById(id);
-    el.oninput = (e)=>{
-      state.currentEntry[key] = e.target.value;
-      saveData();
-    };
+  [['input-writing','writing'],['input-selfcare','selfcare'],['input-keyword','keyword']].forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    el.oninput=(e)=>{state.currentEntry[key]=e.target.value; saveData();};
   });
 }
 
+function saveData(){localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));}
+function switchView(view){state.currentView=view; document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(`view-${view}`).classList.add('active');}
+
 /* ===============================
-   STORAGE
+   PWA INSTALL BUTTON
 ================================ */
-function saveData() {
-  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
-}
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  let deferredPrompt=e;
+
+  const installBtn=document.createElement('button');
+  installBtn.textContent="📲 Instalar Projeto Fênix";
+  installBtn.style.position="fixed";
+  installBtn.style.bottom="16px";
+  installBtn.style.right="16px";
+  installBtn.style.background="#c67b5c";
+  installBtn.style.color="white";
+  installBtn.style.border="none";
+  installBtn.style.borderRadius="1rem";
+  installBtn.style.padding="0.75rem 1rem";
+  installBtn.style.fontWeight="bold";
+  installBtn.style.boxShadow="0 4px 12px rgba(0,0,0,0.2)";
+  installBtn.style.cursor="pointer";
+  document.body.appendChild(installBtn);
+
+  installBtn.addEventListener('click',async()=>{
+    installBtn.disabled=true;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt=null;
+    installBtn.remove();
+  });
+});
+
+/* ===============================
+   INICIALIZAÇÃO
+================================ */
+window.addEventListener('DOMContentLoaded',()=>{
+  loadDailyEntry(state.selectedDate);
+  renderMoods();
+  setupListeners();
+});
 </script>
+
 </body>
 </html>
