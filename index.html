@@ -5,169 +5,156 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Projeto Fênix — Planner Diário</title>
 
-  <!-- Tailwind (ok para agora) -->
+  <!-- Tailwind CDN (ok para agora) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #fdfbf7;
-      color: #3d3d3d;
-    }
-    h1, h2 {
-      font-family: 'Playfair Display', serif;
-    }
-    .card {
-      background: white;
-      border-radius: 1.5rem;
-      padding: 1.5rem;
-      border: 1px solid #e8e2d9;
-      box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
-    }
-    .input {
-      width: 100%;
-      padding: 1rem;
-      border-radius: 1rem;
-      border: 1px solid #e8e2d9;
-      background: #fdfbf7;
-    }
-    .input:focus {
-      outline: none;
-      border-color: #c67b5c;
-    }
-    .btn-mood {
-      padding: .5rem 1rem;
-      border-radius: 1rem;
-      border: 1px solid #e8e2d9;
-      background: white;
-      font-size: .875rem;
-      cursor: pointer;
-    }
-    .btn-mood.active {
-      background: #c67b5c;
-      color: white;
-      border-color: #c67b5c;
-    }
+    body { background:#fdfaf8; }
+    .card { background:#fff; border-radius:1rem; box-shadow:0 4px 12px rgba(0,0,0,.06); }
+    textarea { resize:vertical; }
   </style>
 </head>
+<body class="min-h-screen p-4">
 
-<body class="pb-20">
+  <!-- CABEÇALHO -->
+  <header class="text-center mb-6">
+    <h1 class="text-2xl font-bold">Projeto Fênix</h1>
+    <p id="display-day-name" class="capitalize text-lg mt-2"></p>
+    <p id="display-full-date" class="text-sm opacity-80"></p>
+  </header>
 
-<header class="sticky top-0 bg-white/80 backdrop-blur border-b border-[#e8e2d9]">
-  <div class="max-w-3xl mx-auto px-4 py-4 text-center">
-    <h1 class="text-3xl text-[#c67b5c] font-bold">Projeto Fênix</h1>
-    <p class="text-xs uppercase tracking-widest text-gray-400">
-      Redescubra sua essência diariamente
-    </p>
+  <!-- SELETOR DE DATA -->
+  <div class="mb-6">
+    <input id="date-picker" type="date" class="w-full p-3 rounded-xl border" />
   </div>
-</header>
 
-<main class="max-w-3xl mx-auto px-4 py-8 space-y-10">
+  <!-- CONTEÚDO -->
+  <main id="entry-form" class="space-y-6">
 
-  <!-- DATA -->
-  <section class="flex flex-col md:flex-row items-center justify-between gap-4">
-    <div>
-      <h2 id="day-name" class="text-3xl capitalize">—</h2>
-      <p id="full-date" class="text-xs uppercase tracking-widest text-gray-400">—</p>
+    <!-- FRASE DO DIA -->
+    <div class="card p-4 text-center">
+      <p id="display-phrase" class="italic"></p>
     </div>
-    <input type="date" id="date-picker" class="input max-w-xs font-bold text-[#c67b5c]" />
-  </section>
 
-  <!-- FRASE -->
-  <section class="card text-center">
-    <p class="text-xs uppercase tracking-widest text-[#c67b5c] mb-3">
-      Inspiração Fênix
-    </p>
-    <blockquote id="daily-phrase" class="text-2xl italic">
-      —
-    </blockquote>
-  </section>
+    <!-- PERGUNTAS -->
+    <div id="questions-container" class="space-y-4"></div>
 
-  <!-- MOOD -->
-  <section class="space-y-3">
-    <h3 class="font-serif font-bold text-lg">🌿 Como você se sente hoje?</h3>
-    <div id="mood-container" class="flex flex-wrap gap-2"></div>
-  </section>
+    <!-- ESCRITA LIVRE -->
+    <div class="card p-4">
+      <p class="font-semibold mb-2">Escrita livre</p>
+      <textarea id="input-writing" class="w-full p-2 border rounded" rows="4"></textarea>
+    </div>
 
-  <!-- ESCRITA -->
-  <section class="space-y-3">
-    <h3 class="font-serif font-bold text-lg">✍️ Escrita terapêutica</h3>
-    <textarea id="writing" class="input min-h-[120px]" placeholder="Escreva livremente..."></textarea>
-  </section>
+    <!-- AUTOCUIDADO -->
+    <div class="card p-4">
+      <p class="font-semibold mb-2">Autocuidado de hoje</p>
+      <textarea id="input-selfcare" class="w-full p-2 border rounded" rows="3"></textarea>
+    </div>
 
-</main>
+    <!-- ÂNCORA -->
+    <div class="card p-4">
+      <p class="font-semibold mb-2">Âncora emocional</p>
+      <textarea id="input-anchor" class="w-full p-2 border rounded" rows="2"></textarea>
+    </div>
 
-<script>
-/* ==========================================
-   PROJETO FÊNIX — SCRIPT ESTÁVEL
-   ✔ Fonte única de data
-   ✔ Sem UTC
-   ✔ Sem Service Worker
-========================================== */
+  </main>
 
-const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
-const PHRASES = [
-  "Renove sua energia e desperte sua essência.",
-  "Cada amanhecer é um convite ao autoconhecimento.",
-  "O silêncio também é resposta.",
-  "Respeite seu ritmo.",
-  "Hoje é sobre você."
-];
+  <!-- SCRIPT ÚNICO E ESTÁVEL -->
+  <script>
+    /* ===== DADOS ===== */
+    const QUESTIONS = [
+      "O que sua alma pede hoje?",
+      "Onde você pode ser mais gentil consigo?",
+      "O que precisa de pausa agora?",
+      "O que você pode soltar hoje?",
+      "O que merece mais presença agora?"
+    ];
 
-let state = {
-  date: '',
-  mood: '',
-  writing: ''
-};
+    const PHRASES = [
+      "Renove sua energia e desperte sua essência.",
+      "Cada amanhecer é um convite ao autoconhecimento.",
+      "Pequenos passos criam grandes transformações.",
+      "Respire fundo e volte para si.",
+      "A presença cura."
+    ];
 
-function formatDateVisual(dateStr) {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d, 12); // meio-dia evita bug
-  document.getElementById('day-name').textContent =
-    date.toLocaleDateString('pt-BR', { weekday: 'long' });
-  document.getElementById('full-date').textContent =
-    date.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-}
+    let state = { selectedDate: '', entries: [] };
 
-function loadDay(dateStr) {
-  state.date = dateStr;
-  formatDateVisual(dateStr);
-  document.getElementById('daily-phrase').textContent =
-    PHRASES[Math.floor(Math.random() * PHRASES.length)];
-}
+    /* ===== STORAGE ===== */
+    try {
+      const saved = localStorage.getItem('fenix');
+      if (saved) state.entries = JSON.parse(saved);
+    } catch { state.entries = []; }
 
-function init() {
-  const picker = document.getElementById('date-picker');
+    function save() {
+      localStorage.setItem('fenix', JSON.stringify(state.entries));
+    }
 
-  const today = new Date();
-  picker.valueAsDate = today;
-  loadDay(picker.value);
+    /* ===== DATA ===== */
+    function updateDate(dateStr) {
+      const [y,m,d] = dateStr.split('-').map(Number);
+      const date = new Date(y, m-1, d, 12);
 
-  picker.addEventListener('change', e => {
-    loadDay(e.target.value);
-  });
+      displayDayName.textContent = date.toLocaleDateString('pt-BR',{weekday:'long'});
+      displayFullDate.textContent = date.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    }
 
-  const moodContainer = document.getElementById('mood-container');
-  MOODS.forEach(m => {
-    const btn = document.createElement('button');
-    btn.textContent = m;
-    btn.className = 'btn-mood';
-    btn.onclick = () => {
-      document.querySelectorAll('.btn-mood').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.mood = m;
-    };
-    moodContainer.appendChild(btn);
-  });
-}
+    /* ===== LOAD DIA ===== */
+    function loadDay(dateStr) {
+      updateDate(dateStr);
 
-document.addEventListener('DOMContentLoaded', init);
-</script>
+      let entry = state.entries.find(e=>e.date===dateStr);
 
+      if (!entry) {
+        entry = {
+          date: dateStr,
+          phrase: PHRASES[Math.floor(Math.random()*PHRASES.length)],
+          questions: QUESTIONS.map(q=>({text:q,answer:''})),
+          writing:'', selfcare:'', anchor:''
+        };
+        state.entries.push(entry);
+        save();
+      }
+
+      displayPhrase.textContent = entry.phrase;
+
+      /* perguntas */
+      questionsContainer.innerHTML='';
+      entry.questions.forEach((q,i)=>{
+        const card=document.createElement('div');
+        card.className='card p-4';
+
+        const p=document.createElement('p'); p.textContent=q.text;
+        const ta=document.createElement('textarea');
+        ta.className='w-full p-2 border rounded mt-2';
+        ta.value=q.answer;
+        ta.oninput=e=>{ entry.questions[i].answer=e.target.value; save(); };
+
+        card.append(p,ta);
+        questionsContainer.appendChild(card);
+      });
+
+      inputWriting.value = entry.writing;
+      inputSelfcare.value = entry.selfcare;
+      inputAnchor.value = entry.anchor;
+
+      inputWriting.oninput=e=>{entry.writing=e.target.value;save();};
+      inputSelfcare.oninput=e=>{entry.selfcare=e.target.value;save();};
+      inputAnchor.oninput=e=>{entry.anchor=e.target.value;save();};
+    }
+
+    /* ===== INIT ===== */
+    document.addEventListener('DOMContentLoaded',()=>{
+      const today = new Date();
+      datePicker.valueAsDate = today;
+      state.selectedDate = datePicker.value;
+      loadDay(state.selectedDate);
+
+      datePicker.onchange=e=>{
+        state.selectedDate=e.target.value;
+        loadDay(state.selectedDate);
+      };
+    });
+  </script>
 </body>
 </html>
