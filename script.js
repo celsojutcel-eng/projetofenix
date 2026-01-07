@@ -1,71 +1,54 @@
 <script>
 /* ==========================================
-   PROJETO FÊNIX — PLANNER DIÁRIO (FINAL)
-   ✔ Data local real (sem UTC)
-   ✔ Input date sincronizado
-   ✔ Sem conflito de carregamento
+   PROJETO FÊNIX — SCRIPT ESTÁVEL
+   ✔ NÃO quebra após Clear Site Data
 ========================================== */
 
-/* ---------- DATA LOCAL REAL ---------- */
+/* ---------- DATA LOCAL ---------- */
 function getLocalDateISO() {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 /* ---------- CONSTANTES ---------- */
-const MOODS = [
-  'Leve','Cansada','Inspirada','Ansiosa',
-  'Presente','Confusa','Grata','Empoderada'
-];
-
+const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
 const QUESTIONS = [
   "O que sua alma pede hoje?",
   "Onde você pode ser mais gentil consigo?",
   "O que precisa de pausa agora?"
 ];
-
 const DAILY_PHRASES = [
   "Renove sua energia e desperte sua essência.",
   "Cada amanhecer é um convite ao autoconhecimento.",
   "Pequenos passos diários criam grandes transformações.",
   "O silêncio revela aquilo que palavras não conseguem.",
-  "Respire fundo e sinta seu ritmo interno.",
-  "Gratidão transforma o ordinário em extraordinário.",
-  "Permita-se pausar e ouvir seu coração.",
-  "O reencontro com você começa no agora.",
-  "A coragem surge quando você se escuta.",
-  "Liberte-se do que não serve mais."
+  "Respire fundo e sinta seu ritmo interno."
 ];
 
 /* ---------- ESTADO ---------- */
 let state = {
   selectedDate: getLocalDateISO(),
-  currentEntry: null,
   entries: []
 };
 
-/* ---------- LOCAL STORAGE ---------- */
+/* ---------- STORAGE ---------- */
 try {
   const saved = localStorage.getItem('projeto_fenix_data');
   if (saved) state.entries = JSON.parse(saved);
 } catch {
   localStorage.removeItem('projeto_fenix_data');
-  state.entries = [];
 }
 
 function saveData() {
   localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
 }
 
-/* ---------- CARREGAR DIA ---------- */
+/* ---------- LOAD DAY ---------- */
 function loadDailyEntry(dateStr) {
   const loading = document.getElementById('loading-overlay');
   const form = document.getElementById('entry-form');
-  const questionsContainer = document.getElementById('questions-container');
   const moodContainer = document.getElementById('mood-container');
+  const questionsContainer = document.getElementById('questions-container');
 
   loading.classList.remove('hidden');
   form.classList.add('hidden');
@@ -75,94 +58,70 @@ function loadDailyEntry(dateStr) {
   if (!entry) {
     entry = {
       date: dateStr,
-      phrase: DAILY_PHRASES[Math.floor(Math.random() * DAILY_PHRASES.length)],
-      questions: QUESTIONS.map(q => ({ text: q, answer: '' })),
-      mood: '',
-      writing: '',
-      selfcare: '',
-      anchor: ''
+      phrase: DAILY_PHRASES[Math.floor(Math.random()*DAILY_PHRASES.length)],
+      questions: QUESTIONS.map(q => ({ text:q, answer:'' })),
+      mood:'',
+      writing:'',
+      selfcare:'',
+      anchor:''
     };
     state.entries.push(entry);
     saveData();
   }
 
-  state.currentEntry = entry;
-
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const dateObj = new Date(y, m - 1, d);
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dateObj = new Date(y, m-1, d);
 
   document.getElementById('display-day-name').textContent =
-    dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
+    dateObj.toLocaleDateString('pt-BR',{weekday:'long'});
 
   document.getElementById('display-full-date').textContent =
-    dateObj.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
+    dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
   document.getElementById('display-phrase').textContent = entry.phrase;
 
   questionsContainer.innerHTML = '';
-  entry.questions.forEach((q, i) => {
-    const card = document.createElement('div');
-    card.className = 'card p-4';
-
-    const p = document.createElement('p');
-    p.textContent = q.text;
-
-    const ta = document.createElement('textarea');
-    ta.className = 'input-elegant w-full';
-    ta.value = q.answer;
-    ta.oninput = e => {
+  entry.questions.forEach((q,i)=>{
+    const div = document.createElement('div');
+    div.className='card p-4';
+    div.innerHTML = `<p>${q.text}</p><textarea class="input-elegant w-full">${q.answer}</textarea>`;
+    div.querySelector('textarea').oninput = e=>{
       entry.questions[i].answer = e.target.value;
       saveData();
     };
-
-    card.appendChild(p);
-    card.appendChild(ta);
-    questionsContainer.appendChild(card);
+    questionsContainer.appendChild(div);
   });
 
-  moodContainer.innerHTML = '';
-  MOODS.forEach(mood => {
-    const btn = document.createElement('button');
-    btn.textContent = mood;
-    btn.className = 'btn-mood';
-    if (entry.mood === mood) btn.classList.add('active');
-
-    btn.onclick = () => {
-      entry.mood = mood;
+  moodContainer.innerHTML='';
+  MOODS.forEach(m=>{
+    const btn=document.createElement('button');
+    btn.className='btn-mood';
+    btn.textContent=m;
+    if(entry.mood===m) btn.classList.add('active');
+    btn.onclick=()=>{
+      entry.mood=m;
       saveData();
       loadDailyEntry(dateStr);
     };
-
     moodContainer.appendChild(btn);
   });
 
-  const writing = document.getElementById('input-writing');
-  const selfcare = document.getElementById('input-selfcare');
-  const anchor = document.getElementById('input-anchor');
+  document.getElementById('input-writing').value = entry.writing;
+  document.getElementById('input-selfcare').value = entry.selfcare;
+  document.getElementById('input-anchor').value = entry.anchor;
 
-  writing.value = entry.writing;
-  selfcare.value = entry.selfcare;
-  anchor.value = entry.anchor;
-
-  writing.oninput = e => { entry.writing = e.target.value; saveData(); };
-  selfcare.oninput = e => { entry.selfcare = e.target.value; saveData(); };
-  anchor.oninput = e => { entry.anchor = e.target.value; saveData(); };
+  document.getElementById('input-writing').oninput = e=>{entry.writing=e.target.value;saveData();};
+  document.getElementById('input-selfcare').oninput = e=>{entry.selfcare=e.target.value;saveData();};
+  document.getElementById('input-anchor').oninput = e=>{entry.anchor=e.target.value;saveData();};
 
   loading.classList.add('hidden');
   form.classList.remove('hidden');
 }
 
-/* ---------- INICIALIZAÇÃO FINAL ---------- */
+/* ---------- INICIALIZAÇÃO SEGURA ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   const datePicker = document.getElementById('date-picker');
-
-  state.selectedDate = getLocalDateISO();
   datePicker.value = state.selectedDate;
-
   datePicker.addEventListener('change', e => {
     state.selectedDate = e.target.value;
     loadDailyEntry(state.selectedDate);
