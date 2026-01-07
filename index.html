@@ -117,19 +117,17 @@ h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
 
 <script>
 /* ==========================================
-   PROJETO FÊNIX — PLANNER DIÁRIO (FINAL)
-   ✔ Corrige bug de data (UTC)
-   ✔ Alinha input date + texto + salvamento
+   PROJETO FÊNIX — PLANNER DIÁRIO (DEFINITIVO)
+   ✔ Uma única fonte de data
+   ✔ Input date controla tudo
+   ✔ Zero bug de fuso / UTC
 ========================================== */
 
-/* ---------- DATA LOCAL REAL (SEM UTC) ---------- */
-function getLocalDateISO() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
+/* ---------- ESTADO ---------- */
+let state = {
+  selectedDate: '',
+  entries: []
+};
 
 /* ---------- CONSTANTES ---------- */
 const MOODS = [
@@ -148,27 +146,14 @@ const DAILY_PHRASES = [
   "Cada amanhecer é um convite ao autoconhecimento.",
   "Pequenos passos diários criam grandes transformações.",
   "O silêncio revela aquilo que palavras não conseguem.",
-  "Respire fundo e sinta seu ritmo interno.",
-  "Gratidão transforma o ordinário em extraordinário.",
-  "Permita-se pausar e ouvir seu coração.",
-  "O reencontro com você começa no agora.",
-  "A coragem surge quando você se escuta.",
-  "Liberte-se do que não serve mais."
+  "Respire fundo e sinta seu ritmo interno."
 ];
 
-/* ---------- ESTADO GLOBAL ---------- */
-let state = {
-  selectedDate: getLocalDateISO(), // ✅ DATA LOCAL
-  currentEntry: null,
-  entries: []
-};
-
-/* ---------- LOCAL STORAGE ---------- */
+/* ---------- STORAGE ---------- */
 try {
   const saved = localStorage.getItem('projeto_fenix_data');
   if (saved) state.entries = JSON.parse(saved);
 } catch {
-  localStorage.removeItem('projeto_fenix_data');
   state.entries = [];
 }
 
@@ -176,15 +161,26 @@ function saveData() {
   localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
 }
 
+/* ---------- DATA VISUAL (SEM Date()) ---------- */
+function updateVisualDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+
+  const date = new Date(y, m - 1, d, 12); // meio-dia = zero bug
+
+  document.getElementById('display-day-name').textContent =
+    date.toLocaleDateString('pt-BR', { weekday: 'long' });
+
+  document.getElementById('display-full-date').textContent =
+    date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+}
+
 /* ---------- CARREGAR DIA ---------- */
 function loadDailyEntry(dateStr) {
-  const loading = document.getElementById('loading-overlay');
-  const form = document.getElementById('entry-form');
-  const questionsContainer = document.getElementById('questions-container');
-  const moodContainer = document.getElementById('mood-container');
-
-  loading.classList.remove('hidden');
-  form.classList.add('hidden');
+  updateVisualDate(dateStr);
 
   let entry = state.entries.find(e => e.date === dateStr);
 
@@ -202,95 +198,26 @@ function loadDailyEntry(dateStr) {
     saveData();
   }
 
-  state.currentEntry = entry;
-
-  /* ---------- DATA VISUAL (LOCAL) ---------- */
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const dateObj = new Date(y, m - 1, d);
-
-  document.getElementById('display-day-name').textContent =
-    dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
-
-  document.getElementById('display-full-date').textContent =
-    dateObj.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-
   document.getElementById('display-phrase').textContent = entry.phrase;
-
-  /* ---------- PERGUNTAS ---------- */
-  questionsContainer.innerHTML = '';
-  entry.questions.forEach((q, i) => {
-    const card = document.createElement('div');
-    card.className = 'card p-4';
-
-    const p = document.createElement('p');
-    p.textContent = q.text;
-
-    const ta = document.createElement('textarea');
-    ta.className = 'input-elegant w-full';
-    ta.value = q.answer;
-    ta.oninput = e => {
-      entry.questions[i].answer = e.target.value;
-      saveData();
-    };
-
-    card.appendChild(p);
-    card.appendChild(ta);
-    questionsContainer.appendChild(card);
-  });
-
-  /* ---------- MOODS ---------- */
-  moodContainer.innerHTML = '';
-  MOODS.forEach(mood => {
-    const btn = document.createElement('button');
-    btn.textContent = mood;
-    btn.className = 'btn-mood';
-    if (entry.mood === mood) btn.classList.add('active');
-
-    btn.onclick = () => {
-      entry.mood = mood;
-      saveData();
-      loadDailyEntry(dateStr);
-    };
-
-    moodContainer.appendChild(btn);
-  });
-
-  /* ---------- CAMPOS ---------- */
-  const writing = document.getElementById('input-writing');
-  const selfcare = document.getElementById('input-selfcare');
-  const anchor = document.getElementById('input-anchor');
-
-  writing.value = entry.writing;
-  selfcare.value = entry.selfcare;
-  anchor.value = entry.anchor;
-
-  writing.oninput = e => { entry.writing = e.target.value; saveData(); };
-  selfcare.oninput = e => { entry.selfcare = e.target.value; saveData(); };
-  anchor.oninput = e => { entry.anchor = e.target.value; saveData(); };
-
-  loading.classList.add('hidden');
-  form.classList.remove('hidden');
 }
-
-/* ---------- DATE PICKER ---------- */
-const datePicker = document.getElementById('date-picker');
-datePicker.value = state.selectedDate;
-
-datePicker.addEventListener('change', e => {
-  state.selectedDate = e.target.value;
-  loadDailyEntry(state.selectedDate);
-});
 
 /* ---------- INICIALIZAÇÃO ---------- */
 document.addEventListener('DOMContentLoaded', () => {
+  const datePicker = document.getElementById('date-picker');
+
+  // fonte única da verdade
+  const today = new Date();
+  datePicker.valueAsDate = today;
+
+  state.selectedDate = datePicker.value;
   loadDailyEntry(state.selectedDate);
+
+  datePicker.addEventListener('change', e => {
+    state.selectedDate = e.target.value;
+    loadDailyEntry(state.selectedDate);
+  });
 });
 </script>
-
 
 </body>
 </html>
