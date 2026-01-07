@@ -6,15 +6,19 @@
 <title>Projeto Fênix — Planner Diário</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="manifest" href="manifest.json">
+
 <style>
-.card{background:white;border-radius:1rem;padding:1rem;box-shadow:0 4px 12px rgba(0,0,0,.08);margin-bottom:1rem;}
-.mood{padding:.5rem 1rem;border-radius:999px;border:1px solid #ddd;cursor:pointer;}
-.mood.active{background:#c084fc;color:white;border-color:#c084fc;}
-#install-btn{position:fixed;bottom:20px;right:20px;background-color:#c084fc;color:white;padding:.5rem 1rem;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.2);cursor:pointer;display:none;z-index:999;}
+.card { background:white; border-radius:1rem; padding:1rem; box-shadow:0 4px 12px rgba(0,0,0,.08); margin-bottom:1rem; }
+.mood { padding:.5rem 1rem; border-radius:999px; border:1px solid #ddd; cursor:pointer; }
+.mood.active { background:#c084fc; color:white; border-color:#c084fc; }
+#install-btn { position:fixed; bottom:20px; right:20px; background-color:#c084fc; color:white; padding:.5rem 1rem; border-radius:999px; box-shadow:0 4px 12px rgba(0,0,0,.2); cursor:pointer; display:none; z-index:999; }
 </style>
 </head>
+
 <body class="bg-gradient-to-br from-rose-50 to-purple-100 min-h-screen">
+
 <main class="max-w-2xl mx-auto p-4">
+
 <section class="flex justify-between items-center mb-4">
 <button id="prev-day" class="text-xl">←</button>
 <div class="text-center">
@@ -24,41 +28,34 @@
 </div>
 <button id="next-day" class="text-xl">→</button>
 </section>
+
 <section class="card text-center italic text-purple-700">
 <p id="display-phrase"></p>
 </section>
+
 <section class="card">
 <h2 class="font-semibold mb-2">Como você se sente?</h2>
 <div id="mood-container" class="flex flex-wrap gap-2"></div>
 </section>
+
 <section>
 <h2 class="font-semibold mb-2">Reflexões do dia</h2>
 <div id="questions-container"></div>
 </section>
+
 <section class="card">
 <h2 class="font-semibold mb-2">Autocuidado</h2>
 <textarea id="input-selfcare" rows="3" class="w-full border rounded p-2"></textarea>
 </section>
+
 <section class="card">
 <h2 class="font-semibold mb-2">Insight do dia</h2>
 <textarea id="input-anchor" rows="3" class="w-full border rounded p-2"></textarea>
 </section>
+
 </main>
+
 <button id="install-btn">Instalar App</button>
-<script>
-const MOODS=['Leve','Cansada','Inspirada','Ansiosa','Grata','Presente'];
-const QUESTIONS=["O que sua alma pede hoje?","Onde você pode ser mais gentil consigo?","O que precisa de pausa agora?"];
-const PHRASES=["Renove sua energia.","Ouça seu ritmo interno.","Pequenos passos geram grandes mudanças."];
-let state={date:'',entries:[]};
-function save(){localStorage.setItem('fenix',JSON.stringify(state.entries));}
-function load(){try{const d=localStorage.getItem('fenix');if(d)state.entries=JSON.parse(d);}catch{state.entries=[];}}
-function todayISO(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function addDays(dateStr,diff){const[y,m,d]=dateStr.split('-').map(Number);const dt=new Date(y,m-1,d+diff,12);return`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;}
-function renderDate(dateStr){const[y,m,d]=dateStr.split('-').map(Number);const dt=new Date(y,m-1,d,12);display-day-name.textContent=dt.toLocaleDateString('pt-BR',{weekday:'long'});display-full-date.textContent=dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});}
-function loadDay(dateStr){state.date=dateStr;renderDate(dateStr);let entry=state.entries.find(e=>e.date===dateStr);if(!entry){entry={date:dateStr,phrase:PHRASES[Math.floor(Math.random()*PHRASES.length)],mood:'',questions:QUESTIONS.map(q=>({q,a:''})),selfcare:'',insight:''};state.entries.push(entry);save();}
-display-phrase.textContent=entry.phrase;mood-container.innerHTML='';MOODS.forEach(m=>{const b=document.createElement('button');b.textContent=m;b.className='mood'+(entry.mood===m?' active':'');b.onclick=()=>{entry.mood=m;save();loadDay(dateStr);};mood-container.appendChild(b);});questions-container.innerHTML='';entry.questions.forEach(q=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<p>${q.q}</p><textarea class="w-full border rounded p-2 mt-2">${q.a}</textarea>`;c.querySelector('textarea').oninput=e=>{q.a=e.target.value;save();};questions-container.appendChild(c);});input-selfcare.value=entry.selfcare;input-anchor.value=entry.insight;input-selfcare.oninput=e=>{entry.selfcare=e.target.value;save();};input-anchor.oninput=e=>{entry.insight=e.target.value;save();};}
-document.addEventListener('DOMContentLoaded',()=>{load();date-picker.value=todayISO();loadDay(date-picker.value);date-picker.onchange=e=>loadDay(e.target.value);prev-day.onclick=()=>loadDay(addDays(state.date,-1));next-day.onclick=()=>loadDay(addDays(state.date,1));});
-let deferredPrompt;const installBtn=document.getElementById('install-btn');window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;installBtn.style.display='block';});installBtn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;installBtn.style.display='none';});}});if('serviceWorker'in navigator){window.addEventListener('load',async()=>{try{const reg=await navigator.serviceWorker.register('./service-worker.js');console.log('[SW] Registrado com sucesso:',reg);}catch(err){console.error('[SW] Falha ao registrar:',err);}});}
-</script>
+<script src="script.js"></script>
 </body>
 </html>
