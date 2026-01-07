@@ -1,132 +1,141 @@
-<script>
-/* ==========================================
-   PROJETO FÊNIX — SCRIPT ESTÁVEL
-   ✔ NÃO quebra após Clear Site Data
-========================================== */
-
-/* ---------- DATA LOCAL ---------- */
-function getLocalDateISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-/* ---------- CONSTANTES ---------- */
-const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+// =============================
+// DADOS
+// =============================
+const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Grata','Presente'];
 const QUESTIONS = [
   "O que sua alma pede hoje?",
   "Onde você pode ser mais gentil consigo?",
   "O que precisa de pausa agora?"
 ];
-const DAILY_PHRASES = [
-  "Renove sua energia e desperte sua essência.",
-  "Cada amanhecer é um convite ao autoconhecimento.",
-  "Pequenos passos diários criam grandes transformações.",
-  "O silêncio revela aquilo que palavras não conseguem.",
-  "Respire fundo e sinta seu ritmo interno."
+const PHRASES = [
+  "Renove sua energia.",
+  "Ouça seu ritmo interno.",
+  "Pequenos passos geram grandes mudanças."
 ];
 
-/* ---------- ESTADO ---------- */
-let state = {
-  selectedDate: getLocalDateISO(),
-  entries: []
-};
+let state = { date:'', entries:[] };
 
-/* ---------- STORAGE ---------- */
-try {
-  const saved = localStorage.getItem('projeto_fenix_data');
-  if (saved) state.entries = JSON.parse(saved);
-} catch {
-  localStorage.removeItem('projeto_fenix_data');
+// =============================
+// SALVAR / CARREGAR
+// =============================
+function save() { localStorage.setItem('fenix', JSON.stringify(state.entries)); }
+function load() {
+  try {
+    const d = localStorage.getItem('fenix');
+    if(d) state.entries = JSON.parse(d);
+  } catch { state.entries = []; }
 }
 
-function saveData() {
-  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
+// =============================
+// FUNÇÕES DE DATA
+// =============================
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-/* ---------- LOAD DAY ---------- */
-function loadDailyEntry(dateStr) {
-  const loading = document.getElementById('loading-overlay');
-  const form = document.getElementById('entry-form');
-  const moodContainer = document.getElementById('mood-container');
-  const questionsContainer = document.getElementById('questions-container');
+function addDays(dateStr, diff) {
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m-1, d + diff, 12);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
 
-  loading.classList.remove('hidden');
-  form.classList.add('hidden');
+function renderDate(dateStr) {
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y,m-1,d,12);
+  display-day-name.textContent = dt.toLocaleDateString('pt-BR',{ weekday:'long' });
+  display-full-date.textContent = dt.toLocaleDateString('pt-BR',{ day:'2-digit', month:'long', year:'numeric' });
+}
+
+// =============================
+// LOAD DIA
+// =============================
+function loadDay(dateStr){
+  state.date = dateStr;
+  renderDate(dateStr);
 
   let entry = state.entries.find(e => e.date === dateStr);
-
-  if (!entry) {
+  if(!entry){
     entry = {
       date: dateStr,
-      phrase: DAILY_PHRASES[Math.floor(Math.random()*DAILY_PHRASES.length)],
-      questions: QUESTIONS.map(q => ({ text:q, answer:'' })),
-      mood:'',
-      writing:'',
-      selfcare:'',
-      anchor:''
+      phrase: PHRASES[Math.floor(Math.random()*PHRASES.length)],
+      mood: '',
+      questions: QUESTIONS.map(q => ({q,a:''})),
+      selfcare: '',
+      insight: ''
     };
-    state.entries.push(entry);
-    saveData();
+    state.entries.push(entry); save();
   }
 
-  const [y,m,d] = dateStr.split('-').map(Number);
-  const dateObj = new Date(y, m-1, d);
+  display-phrase.textContent = entry.phrase;
 
-  document.getElementById('display-day-name').textContent =
-    dateObj.toLocaleDateString('pt-BR',{weekday:'long'});
-
-  document.getElementById('display-full-date').textContent =
-    dateObj.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
-
-  document.getElementById('display-phrase').textContent = entry.phrase;
-
-  questionsContainer.innerHTML = '';
-  entry.questions.forEach((q,i)=>{
-    const div = document.createElement('div');
-    div.className='card p-4';
-    div.innerHTML = `<p>${q.text}</p><textarea class="input-elegant w-full">${q.answer}</textarea>`;
-    div.querySelector('textarea').oninput = e=>{
-      entry.questions[i].answer = e.target.value;
-      saveData();
-    };
-    questionsContainer.appendChild(div);
+  // moods
+  mood-container.innerHTML = '';
+  MOODS.forEach(m => {
+    const b = document.createElement('button');
+    b.textContent = m;
+    b.className = 'mood'+(entry.mood===m?' active':'');
+    b.onclick = () => { entry.mood = m; save(); loadDay(dateStr); };
+    mood-container.appendChild(b);
   });
 
-  moodContainer.innerHTML='';
-  MOODS.forEach(m=>{
-    const btn=document.createElement('button');
-    btn.className='btn-mood';
-    btn.textContent=m;
-    if(entry.mood===m) btn.classList.add('active');
-    btn.onclick=()=>{
-      entry.mood=m;
-      saveData();
-      loadDailyEntry(dateStr);
-    };
-    moodContainer.appendChild(btn);
+  // perguntas
+  questions-container.innerHTML = '';
+  entry.questions.forEach(q => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.innerHTML = `<p>${q.q}</p><textarea class="w-full border rounded p-2 mt-2">${q.a}</textarea>`;
+    c.querySelector('textarea').oninput = e => { q.a = e.target.value; save(); };
+    questions-container.appendChild(c);
   });
 
-  document.getElementById('input-writing').value = entry.writing;
-  document.getElementById('input-selfcare').value = entry.selfcare;
-  document.getElementById('input-anchor').value = entry.anchor;
+  input-selfcare.value = entry.selfcare;
+  input-anchor.value = entry.insight;
 
-  document.getElementById('input-writing').oninput = e=>{entry.writing=e.target.value;saveData();};
-  document.getElementById('input-selfcare').oninput = e=>{entry.selfcare=e.target.value;saveData();};
-  document.getElementById('input-anchor').oninput = e=>{entry.anchor=e.target.value;saveData();};
-
-  loading.classList.add('hidden');
-  form.classList.remove('hidden');
+  input-selfcare.oninput = e => { entry.selfcare = e.target.value; save(); };
+  input-anchor.oninput = e => { entry.insight = e.target.value; save(); };
 }
 
-/* ---------- INICIALIZAÇÃO SEGURA ---------- */
+// =============================
+// INIT
+// =============================
 document.addEventListener('DOMContentLoaded', () => {
-  const datePicker = document.getElementById('date-picker');
-  datePicker.value = state.selectedDate;
-  datePicker.addEventListener('change', e => {
-    state.selectedDate = e.target.value;
-    loadDailyEntry(state.selectedDate);
-  });
+  load();
+  date-picker.value = todayISO();
+  loadDay(date-picker.value);
 
-  loadDailyEntry(state.selectedDate);
+  date-picker.onchange = e => loadDay(e.target.value);
+  prev-day.onclick = () => loadDay(addDays(state.date,-1));
+  next-day.onclick = () => loadDay(addDays(state.date,1));
 });
-</script>
+
+// =============================
+// PWA + BOTÃO INSTALAR
+// =============================
+let deferredPrompt;
+const installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; installBtn.style.display='none'; });
+  }
+});
+
+// SERVICE WORKER
+if('serviceWorker' in navigator){
+  window.addEventListener('load', async () => {
+    try{
+      const reg = await navigator.serviceWorker.register('./service-worker.js');
+      console.log('[SW] Registrado com sucesso:', reg);
+    }catch(err){
+      console.error('[SW] Falha ao registrar:', err);
+    }
+  });
+}
