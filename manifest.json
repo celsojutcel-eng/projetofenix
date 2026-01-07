@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#c084fc",
- "icons": [
+  "icons": [
     {
       "src": "./icons/logo.png",
       "sizes": "512x512",
@@ -13,3 +13,4 @@
       "purpose": "any maskable"
     }
   ]
+}
