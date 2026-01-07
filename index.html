@@ -1,226 +1,173 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Projeto Fênix - Planner 2026</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projeto Fênix — Planner Diário</title>
 
-<!-- Tailwind -->
-<script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind (ok para agora) -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-<!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#c67b5c">
-
-<style>
-:root {
-  --color-bg:#fdfbf7;
-  --color-primary:#c67b5c;
-  --color-secondary:#5d4a44;
-  --color-text:#3d3d3d;
-  --color-border:#e8e2d9;
-}
-body{font-family:'Inter',sans-serif;background:var(--color-bg);color:var(--color-text);scroll-behavior:smooth;margin:0;}
-h1,h2,h3,.font-serif{font-family:'Playfair Display',serif;}
-.card{background:white;border:1px solid var(--color-border);border-radius:1.5rem;box-shadow:0 4px 20px -5px rgba(0,0,0,0.05);}
-.input-elegant{background:#fdfbf7;border:1px solid var(--color-border);border-radius:1rem;padding:1rem;width:100%;transition:all 0.3s;}
-.input-elegant:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(198,123,92,0.1);}
-.btn-mood{padding:.75rem 1rem;border-radius:1rem;border:1px solid var(--color-border);font-size:.875rem;background:white;transition:all .2s;cursor:pointer;}
-.btn-mood.active{background:var(--color-primary);color:white;border-color:var(--color-primary);transform:scale(1.05);}
-.fade-in{animation:fadeIn .4s ease-out forwards;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.loader{border:3px solid #f3f3f3;border-top:3px solid var(--color-primary);border-radius:50%;width:24px;height:24px;animation:spin 1s linear infinite;}
-@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-.view{display:none;}
-.view.active{display:block;}
-</style>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fdfbf7;
+      color: #3d3d3d;
+    }
+    h1, h2 {
+      font-family: 'Playfair Display', serif;
+    }
+    .card {
+      background: white;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      border: 1px solid #e8e2d9;
+      box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
+    }
+    .input {
+      width: 100%;
+      padding: 1rem;
+      border-radius: 1rem;
+      border: 1px solid #e8e2d9;
+      background: #fdfbf7;
+    }
+    .input:focus {
+      outline: none;
+      border-color: #c67b5c;
+    }
+    .btn-mood {
+      padding: .5rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid #e8e2d9;
+      background: white;
+      font-size: .875rem;
+      cursor: pointer;
+    }
+    .btn-mood.active {
+      background: #c67b5c;
+      color: white;
+      border-color: #c67b5c;
+    }
+  </style>
 </head>
-<body class="pb-24 md:pb-8">
 
-<!-- HEADER -->
-<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#e8e2d9]">
-  <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-    <div class="text-center md:text-left">
-      <h1 class="text-2xl md:text-3xl font-bold text-[#c67b5c]">Projeto Fênix <span class="text-[#a89f91] font-light italic">2026</span></h1>
-      <p class="text-[10px] uppercase tracking-[0.2em] text-[#a89f91] font-bold">Redescubra sua essência diariamente</p>
-    </div>
+<body class="pb-20">
+
+<header class="sticky top-0 bg-white/80 backdrop-blur border-b border-[#e8e2d9]">
+  <div class="max-w-3xl mx-auto px-4 py-4 text-center">
+    <h1 class="text-3xl text-[#c67b5c] font-bold">Projeto Fênix</h1>
+    <p class="text-xs uppercase tracking-widest text-gray-400">
+      Redescubra sua essência diariamente
+    </p>
   </div>
 </header>
 
-<!-- MAIN -->
-<main class="max-w-3xl mx-auto px-4 py-8">
-  <div id="view-today" class="view active fade-in">
-    <div id="today-content">
+<main class="max-w-3xl mx-auto px-4 py-8 space-y-10">
 
-      <!-- LOADING -->
-      <div id="loading-overlay" class="flex flex-col items-center justify-center py-20 text-center">
-        <div class="loader mb-4"></div>
-        <p class="italic font-serif text-gray-500">Preparando seu espaço sagrado...</p>
-      </div>
-
-      <!-- FORM -->
-      <div id="entry-form" class="hidden space-y-10">
-
-        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-200 pb-6 gap-4">
-          <div>
-            <h2 id="display-day-name" class="text-4xl font-serif text-gray-800">Segunda-feira</h2>
-            <p id="display-full-date" class="text-gray-400 uppercase text-xs tracking-widest mt-1">01 de Janeiro de 2026</p>
-          </div>
-          <input type="date" id="date-picker" class="bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-bold text-[#c67b5c]">
-        </div>
-
-        <!-- FRASE DO DIA -->
-        <div class="bg-gradient-to-br from-[#f7f0e8] to-white p-10 rounded-[2.5rem] border border-[#f0e6da] shadow-sm text-center">
-          <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-4">Inspiração Fênix</p>
-          <blockquote id="display-phrase" class="text-2xl md:text-3xl font-serif italic text-[#5d4a44] leading-tight">"..."</blockquote>
-        </div>
-
-        <!-- CHECK-IN EMOCIONAL -->
-        <section class="space-y-4">
-          <div class="flex items-center gap-2"><span class="text-xl">🌿</span><h3 class="font-serif font-bold text-lg">Check-in Emocional</h3></div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="mood-container"></div>
-        </section>
-
-        <!-- REFLEXÃO -->
-        <section class="space-y-4">
-          <div class="flex items-center gap-2"><span class="text-xl">🪞</span><h3 class="font-serif font-bold text-lg">Reflexão Profunda</h3></div>
-          <div class="space-y-4" id="questions-container"></div>
-        </section>
-
-        <!-- ESCRITA TERAPÊUTICA -->
-        <section class="space-y-4">
-          <div class="flex items-center gap-2"><span class="text-xl">✍️</span><h3 class="font-serif font-bold text-lg">Escrita Terapêutica</h3></div>
-          <textarea id="input-writing" class="input-elegant min-h-[150px]" placeholder="Escreva livremente..."></textarea>
-        </section>
-
-        <!-- AUTOCUIDADO -->
-        <section class="space-y-4">
-          <div class="flex items-center gap-2"><span class="text-xl">💖</span><h3 class="font-serif font-bold text-lg">Autocuidado</h3></div>
-          <textarea id="input-selfcare" class="input-elegant min-h-[100px]" placeholder="Liste suas ações de autocuidado para hoje..."></textarea>
-        </section>
-
-        <!-- ÂNCORA DO DIA -->
-        <section class="space-y-4">
-          <div class="flex items-center gap-2"><span class="text-xl">⚓</span><h3 class="font-serif font-bold text-lg">Âncora do Dia</h3></div>
-          <input type="text" id="input-anchor" class="input-elegant w-full" placeholder="Palavra, frase ou ação que te mantém centrada...">
-        </section>
-
-      </div>
+  <!-- DATA -->
+  <section class="flex flex-col md:flex-row items-center justify-between gap-4">
+    <div>
+      <h2 id="day-name" class="text-3xl capitalize">—</h2>
+      <p id="full-date" class="text-xs uppercase tracking-widest text-gray-400">—</p>
     </div>
-  </div>
+    <input type="date" id="date-picker" class="input max-w-xs font-bold text-[#c67b5c]" />
+  </section>
+
+  <!-- FRASE -->
+  <section class="card text-center">
+    <p class="text-xs uppercase tracking-widest text-[#c67b5c] mb-3">
+      Inspiração Fênix
+    </p>
+    <blockquote id="daily-phrase" class="text-2xl italic">
+      —
+    </blockquote>
+  </section>
+
+  <!-- MOOD -->
+  <section class="space-y-3">
+    <h3 class="font-serif font-bold text-lg">🌿 Como você se sente hoje?</h3>
+    <div id="mood-container" class="flex flex-wrap gap-2"></div>
+  </section>
+
+  <!-- ESCRITA -->
+  <section class="space-y-3">
+    <h3 class="font-serif font-bold text-lg">✍️ Escrita terapêutica</h3>
+    <textarea id="writing" class="input min-h-[120px]" placeholder="Escreva livremente..."></textarea>
+  </section>
+
 </main>
 
 <script>
 /* ==========================================
-   PROJETO FÊNIX — PLANNER DIÁRIO (DEFINITIVO)
-   ✔ Uma única fonte de data
-   ✔ Input date controla tudo
-   ✔ Zero bug de fuso / UTC
+   PROJETO FÊNIX — SCRIPT ESTÁVEL
+   ✔ Fonte única de data
+   ✔ Sem UTC
+   ✔ Sem Service Worker
 ========================================== */
 
-/* ---------- ESTADO ---------- */
-let state = {
-  selectedDate: '',
-  entries: []
-};
-
-/* ---------- CONSTANTES ---------- */
-const MOODS = [
-  'Leve','Cansada','Inspirada','Ansiosa',
-  'Presente','Confusa','Grata','Empoderada'
-];
-
-const QUESTIONS = [
-  "O que sua alma pede hoje?",
-  "Onde você pode ser mais gentil consigo?",
-  "O que precisa de pausa agora?"
-];
-
-const DAILY_PHRASES = [
+const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Presente','Confusa','Grata','Empoderada'];
+const PHRASES = [
   "Renove sua energia e desperte sua essência.",
   "Cada amanhecer é um convite ao autoconhecimento.",
-  "Pequenos passos diários criam grandes transformações.",
-  "O silêncio revela aquilo que palavras não conseguem.",
-  "Respire fundo e sinta seu ritmo interno."
+  "O silêncio também é resposta.",
+  "Respeite seu ritmo.",
+  "Hoje é sobre você."
 ];
 
-/* ---------- STORAGE ---------- */
-try {
-  const saved = localStorage.getItem('projeto_fenix_data');
-  if (saved) state.entries = JSON.parse(saved);
-} catch {
-  state.entries = [];
-}
+let state = {
+  date: '',
+  mood: '',
+  writing: ''
+};
 
-function saveData() {
-  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
-}
-
-/* ---------- DATA VISUAL (SEM Date()) ---------- */
-function updateVisualDate(dateStr) {
+function formatDateVisual(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
-
-  const date = new Date(y, m - 1, d, 12); // meio-dia = zero bug
-
-  document.getElementById('display-day-name').textContent =
+  const date = new Date(y, m - 1, d, 12); // meio-dia evita bug
+  document.getElementById('day-name').textContent =
     date.toLocaleDateString('pt-BR', { weekday: 'long' });
-
-  document.getElementById('display-full-date').textContent =
-    date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
+  document.getElementById('full-date').textContent =
+    date.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
 }
 
-/* ---------- CARREGAR DIA ---------- */
-function loadDailyEntry(dateStr) {
-  updateVisualDate(dateStr);
-
-  let entry = state.entries.find(e => e.date === dateStr);
-
-  if (!entry) {
-    entry = {
-      date: dateStr,
-      phrase: DAILY_PHRASES[Math.floor(Math.random() * DAILY_PHRASES.length)],
-      questions: QUESTIONS.map(q => ({ text: q, answer: '' })),
-      mood: '',
-      writing: '',
-      selfcare: '',
-      anchor: ''
-    };
-    state.entries.push(entry);
-    saveData();
-  }
-
-  document.getElementById('display-phrase').textContent = entry.phrase;
+function loadDay(dateStr) {
+  state.date = dateStr;
+  formatDateVisual(dateStr);
+  document.getElementById('daily-phrase').textContent =
+    PHRASES[Math.floor(Math.random() * PHRASES.length)];
 }
 
-/* ---------- INICIALIZAÇÃO ---------- */
-document.addEventListener('DOMContentLoaded', () => {
-  const datePicker = document.getElementById('date-picker');
+function init() {
+  const picker = document.getElementById('date-picker');
 
-  // fonte única da verdade
   const today = new Date();
-  datePicker.valueAsDate = today;
+  picker.valueAsDate = today;
+  loadDay(picker.value);
 
-  state.selectedDate = datePicker.value;
-  loadDailyEntry(state.selectedDate);
-
-  datePicker.addEventListener('change', e => {
-    state.selectedDate = e.target.value;
-    loadDailyEntry(state.selectedDate);
+  picker.addEventListener('change', e => {
+    loadDay(e.target.value);
   });
-});
+
+  const moodContainer = document.getElementById('mood-container');
+  MOODS.forEach(m => {
+    const btn = document.createElement('button');
+    btn.textContent = m;
+    btn.className = 'btn-mood';
+    btn.onclick = () => {
+      document.querySelectorAll('.btn-mood').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.mood = m;
+    };
+    moodContainer.appendChild(btn);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 
 </body>
 </html>
-
-
-
