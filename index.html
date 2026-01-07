@@ -248,58 +248,67 @@ document.getElementById('date-picker').onchange = e=>{
 window.addEventListener('DOMContentLoaded', ()=>{
   loadDailyEntry(state.selectedDate);
 });
-</script>
+ <!-- SCRIPT PRINCIPAL DO PLANNER -->
+  <script src="script.js"></script>
 
-<!-- ================================
-     SERVICE WORKER + PWA
-================================ -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js')
-      .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
-      .catch(err => console.error('❌ Erro no Service Worker:', err));
-  });
-}
+  <!-- ================================
+       SERVICE WORKER + PWA
+  ================================ -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('./service-worker.js')
+          .then(reg => {
+            console.log('✅ Service Worker registrado:', reg.scope);
+          })
+          .catch(err => {
+            console.error('❌ Erro no Service Worker:', err);
+          });
+      });
+    }
 
-let deferredPrompt;
+    let deferredPrompt;
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
 
-  if (document.getElementById('pwa-install-btn')) return;
+      if (document.getElementById('pwa-install-btn')) return;
 
-  const installBtn = document.createElement('button');
-  installBtn.id = 'pwa-install-btn';
-  installBtn.textContent = '📲 Instalar Projeto Fênix';
+      const installBtn = document.createElement('button');
+      installBtn.id = 'pwa-install-btn';
+      installBtn.textContent = '📲 Instalar Projeto Fênix';
 
-  Object.assign(installBtn.style, {
-    position: 'fixed',
-    bottom: '16px',
-    right: '16px',
-    background: '#c67b5c',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '1rem',
-    padding: '0.75rem 1rem',
-    fontWeight: 'bold',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-    cursor: 'pointer',
-    zIndex: '9999'
-  });
+      Object.assign(installBtn.style, {
+        position: 'fixed',
+        bottom: '16px',
+        right: '16px',
+        background: '#c67b5c',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '1rem',
+        padding: '0.75rem 1rem',
+        fontWeight: 'bold',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        cursor: 'pointer',
+        zIndex: '9999'
+      });
 
-  document.body.appendChild(installBtn);
+      document.body.appendChild(installBtn);
 
-  installBtn.onclick = async () => {
-    installBtn.disabled = true;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.remove();
-  };
-});
-</script>
+      installBtn.addEventListener('click', async () => {
+        installBtn.disabled = true;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.remove();
+      });
+    });
+  </script>
+
+</body>
+</html>
 
 
 </body>
