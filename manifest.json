@@ -1,17 +1,12 @@
 {
   "name": "Projeto Fênix — Planner Diário",
   "short_name": "Fênix Planner",
-  "description": "Organize seu dia, registre moods, reflexões e insights com o Projeto Fênix.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#fdf2f8",
+  "background_color": "#fdfbf7",
   "theme_color": "#c084fc",
-  "orientation": "portrait",
-  "scope": "./",
   "icons": [
     { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ],
-  "categories": ["productivity","lifestyle"],
-  "lang": "pt-BR"
+  ]
 }
