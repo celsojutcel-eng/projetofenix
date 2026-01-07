@@ -13,7 +13,7 @@
 <style>
 body { font-family: 'Inter', sans-serif; background-color: #fdfbf7; color: #3d3d3d; }
 h1,h2,h3,.font-serif { font-family: 'Playfair Display', serif; }
-.mood-btn { padding:.5rem 1rem; border-radius:1rem; border:1px solid #ddd; cursor:pointer; transition:.2s; text-align: center; }
+.mood-btn { padding:.5rem 1rem; border-radius:1rem; border:1px solid #ddd; cursor:pointer; transition:.2s; text-align: center; font-size: 0.875rem; }
 .mood-btn.active { background:#c084fc; color:white; border-color:#c084fc; transform: scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,.2); }
 textarea,input { outline:none; }
 </style>
@@ -37,7 +37,7 @@ textarea,input { outline:none; }
 
     <div class="mb-6 p-6 bg-gradient-to-br from-[#f7f0e8] to-white rounded-2xl shadow-sm text-center border border-[#eee6de]">
       <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-2">Inspiração Fênix</p>
-      <blockquote id="display-phrase" class="text-xl md:text-2xl font-serif italic text-[#5d4a44]">Aguardando...</blockquote>
+      <blockquote id="display-phrase" class="text-xl md:text-2xl font-serif italic text-[#5d4a44]">...</blockquote>
     </div>
 
     <div class="mb-6">
@@ -47,19 +47,19 @@ textarea,input { outline:none; }
 
     <div class="mb-6">
       <h3 class="font-serif font-bold mb-1 text-lg">🪞 Reflexão Profunda</h3>
-      <p id="display-question" class="italic mb-3 text-[#5d4a44] text-sm">...</p>
+      <p id="display-question" class="italic mb-3 text-[#c67b5c] font-medium text-sm">Carregando pergunta...</p>
       <textarea id="field-reconnection" class="w-full border border-[#e8e2d9] rounded-xl p-4 min-h-[120px] focus:ring-2 focus:ring-[#c084fc]/20" placeholder="Sua alma responde..." oninput="saveCurrent()"></textarea>
     </div>
 
     <div class="mb-6">
       <h3 class="font-serif font-bold mb-3 text-lg">✍️ Escrita Terapêutica</h3>
-      <textarea id="field-writing" class="w-full border border-[#e8e2d9] rounded-xl p-6 min-h-[200px] focus:ring-2 focus:ring-[#c084fc]/20" placeholder="Escreva livremente sobre seu dia..." oninput="saveCurrent()"></textarea>
+      <textarea id="field-writing" class="w-full border border-[#e8e2d9] rounded-xl p-6 min-h-[200px] focus:ring-2 focus:ring-[#c084fc]/20" placeholder="Escreva livremente..." oninput="saveCurrent()"></textarea>
     </div>
 
     <div class="grid md:grid-cols-2 gap-6">
       <div>
         <h3 class="font-serif font-bold mb-3 text-lg">Autocuidado</h3>
-        <textarea id="field-selfcare" class="w-full border border-[#e8e2d9] rounded-xl p-4 min-h-[100px] focus:ring-2 focus:ring-[#c084fc]/20" placeholder="Ex: Meditação, skin care, leitura..." oninput="saveCurrent()"></textarea>
+        <textarea id="field-selfcare" class="w-full border border-[#e8e2d9] rounded-xl p-4 min-h-[100px] focus:ring-2 focus:ring-[#c084fc]/20" placeholder="O que você fez por você?" oninput="saveCurrent()"></textarea>
       </div>
       <div>
         <h3 class="font-serif font-bold mb-3 text-lg">Âncora do Dia</h3>
@@ -67,16 +67,13 @@ textarea,input { outline:none; }
       </div>
     </div>
 
-    <div class="mt-10 pt-6 border-t border-[#e8e2d9] flex justify-center">
-        <button onclick="downloadBackup()" class="bg-white border border-[#c084fc] text-[#c084fc] hover:bg-[#c084fc] hover:text-white transition-colors px-8 py-3 rounded-full text-sm font-bold shadow-sm">
-            Baixar Backup de Dados
-        </button>
+    <div class="mt-10 flex justify-center">
+        <button onclick="downloadBackup()" class="text-[#a89f91] text-xs underline uppercase tracking-widest">Baixar Backup de Dados</button>
     </div>
   </div>
 </main>
 
 <script>
-// --- BANCO DE DADOS DE CONTEÚDO ---
 const FRASES_INSPIRACAO = [
     "A fênix não apenas renasce, ela escolhe o que deixar virar cinzas.", "Sua luz interna é o guia mais seguro em tempos de mudança.", "Honre o seu ritmo; até o sol tem seu tempo de se pôr para brilhar de novo.", "Pequenos passos diários constroem caminhos extraordinários.", "A cura não é linear, mas a persistência é transformadora.", "Você é o autor da sua própria metamorfose.", "Onde houver sombra, lembre-se de que há uma luz por perto.", "Sua essência é inabalável, mesmo quando tudo ao redor parece mudar.", "Cultive o jardim interno e as borboletas virão.", "A coragem não é a ausência de medo, mas o agir apesar dele.", "Permita-se recomeçar quantas vezes forem necessárias.", "Sua história de superação é o mapa para o seu sucesso.", "O autocuidado é a fundação de todo o resto.", "Seja gentil consigo mesma; você está fazendo o seu melhor.", "A paciência é a chave que abre as portas do amadurecimento.", "Brilhe sem pedir licença; o mundo precisa da sua luz.", "A gratidão transforma o que temos em suficiente.", "Sua força reside na sua vulnerabilidade.", "Mantenha os pés no chão e os olhos nas estrelas.", "Cada novo amanhecer é uma página em branco para o seu renascimento.", "Não compare o seu capítulo um com o capítulo vinte de outra pessoa.", "A paz começa dentro de você.", "Transforme suas cicatrizes em medalhas de honra.", "Acredite na magia dos novos começos.", "Você é mais forte do que imagina e mais capaz do que acredita.", "A felicidade é um caminho, não um destino.", "Escute a voz da sua intuição; ela conhece o caminho.", "Semeie amor e colha liberdade.", "O agora é o único lugar onde a vida acontece.", "Celebre suas pequenas vitórias, elas são o alicerce das grandes.", "Renascer exige coragem para deixar ir o que não serve mais."
 ];
@@ -85,7 +82,6 @@ const PERGUNTAS_REFLEXAO = [
     "Qual parte de você está pronta para florescer hoje?", "O que você pode soltar agora para se sentir mais leve?", "Pelo que o seu 'eu' do futuro te agradeceria hoje?", "Como você pode ser seu próprio refúgio neste momento?", "Qual foi a última vez que você se orgulhou da sua coragem?", "O que o seu silêncio está tentando te dizer hoje?", "Como você pode nutrir sua alma nas próximas horas?", "Qual hábito antigo você está pronta para transformar em cinzas?", "Se o medo não existisse, o que você faria agora?", "O que traz um brilho genuíno aos seus olhos?", "Como você pode ser 1% mais gentil consigo mesma hoje?", "Qual é a sua âncora nos dias de tempestade?", "O que você aprendeu sobre si mesma na última semana?", "Quais são os limites que você precisa estabelecer para sua paz?", "Se a sua vida fosse um livro, qual seria o título do capítulo de hoje?", "Pelo que você é profundamente grata, mas raramente menciona?", "Como você pode expressar sua criatividade hoje?", "O que significa 'sucesso' para você neste exato momento?", "Qual pensamento você quer plantar na sua mente ao acordar?", "Como você lida com as suas sombras e inseguranças?", "Qual é o seu maior superpoder emocional?", "Se você pudesse dizer algo ao seu 'eu' de 10 anos atrás, o que seria?", "O que você está adiando que traria paz ao seu coração?", "Como você pode tornar seu ambiente um lugar mais sagrado?", "O que você descobriu que não precisa mais carregar?", "Qual é a intenção mais pura por trás das suas ações de hoje?", "Como você define a sua própria liberdade?", "O que faz você se sentir verdadeiramente conectada com a vida?", "Qual é a lição que o obstáculo de hoje está tentando te ensinar?", "Como você quer ser lembrada pelas pessoas que cruzarem seu caminho?", "O que você escolhe abraçar hoje: o controle ou a entrega?"
 ];
 
-// --- LÓGICA DO APP ---
 let entries = JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]');
 let currentDate = new Date().toISOString().split('T')[0];
 let currentEntry = null;
@@ -93,9 +89,7 @@ const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Grata','Presente'];
 
 const renderMoods = () => {
   const grid = document.getElementById('mood-grid');
-  grid.innerHTML = MOODS.map(m => {
-    return `<button class="mood-btn ${currentEntry?.mood === m ? 'active' : ''}" onclick="setMood('${m}')">${m}</button>`;
-  }).join('');
+  grid.innerHTML = MOODS.map(m => `<button class="mood-btn ${currentEntry?.mood === m ? 'active' : ''}" onclick="setMood('${m}')">${m}</button>`).join('');
 };
 
 window.setMood = (mood) => {
@@ -107,37 +101,30 @@ window.setMood = (mood) => {
 window.loadDate = (date) => {
   currentDate = date;
   document.getElementById('input-date').value = date;
-  
   const d = new Date(date + 'T12:00:00');
+  
   document.getElementById('display-dayname').innerText = d.toLocaleDateString('pt-BR', { weekday: 'long' });
   document.getElementById('display-date').innerText = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  // Cálculo do índice baseado no dia do mês (1 a 31)
-  const dayIndex = (d.getDate() - 1); 
+  // Pega o índice baseado no dia (0 a 30)
+  const dayOfMonth = d.getDate() - 1;
+  const dailyPhrase = FRASES_INSPIRACAO[dayOfMonth % 31];
+  const dailyQuestion = PERGUNTAS_REFLEXAO[dayOfMonth % 31];
 
-  const existing = entries.find(e => e.date === date);
-  
+  let existing = entries.find(e => e.date === date);
+
   if (existing) {
     currentEntry = existing;
-    // Garante que se a frase/pergunta estiver vazia por erro anterior, ela seja preenchida agora
-    if (!currentEntry.phrase) currentEntry.phrase = FRASES_INSPIRACAO[dayIndex % 31];
-    if (!currentEntry.question) currentEntry.question = PERGUNTAS_REFLEXAO[dayIndex % 31];
+    // Força a atualização se os campos estiverem vazios ou indefinidos
+    if (!currentEntry.phrase || currentEntry.phrase === "Sintonizando...") currentEntry.phrase = dailyPhrase;
+    if (!currentEntry.question || currentEntry.question === "...") currentEntry.question = dailyQuestion;
   } else {
-    currentEntry = { 
-        date, 
-        phrase: FRASES_INSPIRACAO[dayIndex % 31], 
-        question: PERGUNTAS_REFLEXAO[dayIndex % 31], 
-        mood: '', 
-        reconnection: '', 
-        writing: '', 
-        selfcare: '', 
-        keyword: '' 
-    };
+    currentEntry = { date, phrase: dailyPhrase, question: dailyQuestion, mood: '', reconnection: '', writing: '', selfcare: '', keyword: '' };
   }
 
-  // Preenchimento dos campos garantindo que não apareça "undefined"
-  document.getElementById('display-phrase').innerText = currentEntry.phrase || "Respire fundo e recomece.";
-  document.getElementById('display-question').innerText = currentEntry.question || "Como você está hoje?";
+  // Renderização na tela com proteção total contra undefined
+  document.getElementById('display-phrase').innerText = currentEntry.phrase || dailyPhrase;
+  document.getElementById('display-question').innerText = currentEntry.question || dailyQuestion;
   document.getElementById('field-reconnection').value = currentEntry.reconnection || "";
   document.getElementById('field-writing').value = currentEntry.writing || "";
   document.getElementById('field-selfcare').value = currentEntry.selfcare || "";
@@ -147,8 +134,7 @@ window.loadDate = (date) => {
 };
 
 window.saveCurrent = () => {
-  if(!currentEntry) return;
-  
+  if (!currentEntry) return;
   currentEntry.reconnection = document.getElementById('field-reconnection').value;
   currentEntry.writing = document.getElementById('field-writing').value;
   currentEntry.selfcare = document.getElementById('field-selfcare').value;
@@ -164,40 +150,35 @@ window.saveCurrent = () => {
 window.downloadBackup = () => {
   const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `projeto-fenix-backup-${currentDate}.json`;
+  const a = document.createElement('a'); a.href = url;
+  a.download = `backup-fenix-${currentDate}.json`;
   a.click();
 };
 
-// Inicialização
+// Inicializa o app
 loadDate(currentDate);
 
-// --- PWA E SERVICE WORKER ---
+// PWA Logic
 let deferredPrompt;
-const installBtn = document.getElementById('install-btn');
-
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installBtn.style.display = 'block';
+  document.getElementById('install-btn').classList.remove('hidden');
 });
 
-installBtn.addEventListener('click', async () => {
+document.getElementById('install-btn').addEventListener('click', async () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') installBtn.style.display = 'none';
     deferredPrompt = null;
+    document.getElementById('install-btn').classList.add('hidden');
   }
 });
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erro SW:', err));
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   });
 }
 </script>
-
 </body>
 </html>
