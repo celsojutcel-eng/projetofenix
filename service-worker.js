@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projeto-fenix-final';
+const CACHE_NAME = 'projeto-fenix-pwa';
 const FILES_TO_CACHE = [
   './',
   './index.html',
@@ -8,13 +8,11 @@ const FILES_TO_CACHE = [
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Instalando...');
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Ativando...');
   event.waitUntil(
     caches.keys().then(keys => Promise.all(keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null)))
   );
