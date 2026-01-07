@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projeto-fenix-cache-v2';
+const CACHE_NAME = 'projeto-fenix-cache-v1';
 const FILES_TO_CACHE = [
   './index.html',
   './manifest.json',
