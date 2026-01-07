@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projeto-fenix-cache-v2'; // Mudamos para v2 para forçar a atualização
+const CACHE_NAME = 'projeto-fenix-cache-v3'; // Mudamos para v3 para forçar a atualização
 const FILES_TO_CACHE = [
   './',
   './index.html',
