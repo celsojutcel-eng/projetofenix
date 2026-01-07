@@ -150,7 +150,9 @@ try {
   state.entries = [];
 }
 
-function saveData(){localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));}
+function saveData(){
+  localStorage.setItem('projeto_fenix_data',JSON.stringify(state.entries));
+}
 
 function loadDailyEntry(date){
   const loading=document.getElementById('loading-overlay');
@@ -178,25 +180,35 @@ function loadDailyEntry(date){
 
   state.currentEntry = entry;
 
-  // Datas e frase
   document.getElementById('display-phrase').textContent = entry.phrase;
-  const dateObj = new Date(date);
-  document.getElementById('display-full-date').textContent = dateObj.toLocaleDateString('pt-BR',{year:'numeric', month:'long', day:'numeric'});
-  document.getElementById('display-day-name').textContent = dateObj.toLocaleDateString('pt-BR',{weekday:'long'});
 
-  // Perguntas
+  const dateObj = new Date(date);
+  document.getElementById('display-full-date').textContent =
+    dateObj.toLocaleDateString('pt-BR',{year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('display-day-name').textContent =
+    dateObj.toLocaleDateString('pt-BR',{weekday:'long'});
+
   questionsContainer.innerHTML='';
   entry.questions.forEach((q,i)=>{
     const card=document.createElement('div');
     card.className='card p-4';
-    const p=document.createElement('p'); p.textContent=q.text;
+
+    const p=document.createElement('p');
+    p.textContent=q.text;
+
     const ta=document.createElement('textarea');
-    ta.className='input-elegant w-full'; ta.value=q.answer;
-    ta.oninput=e=>{entry.questions[i].answer=e.target.value; saveData();};
-    card.appendChild(p); card.appendChild(ta); questionsContainer.appendChild(card);
+    ta.className='input-elegant w-full';
+    ta.value=q.answer;
+    ta.oninput=e=>{
+      entry.questions[i].answer=e.target.value;
+      saveData();
+    };
+
+    card.appendChild(p);
+    card.appendChild(ta);
+    questionsContainer.appendChild(card);
   });
 
-  // Moods
   moodContainer.innerHTML='';
   MOODS.forEach(m=>{
     const btn=document.createElement('button');
@@ -204,63 +216,58 @@ function loadDailyEntry(date){
     btn.className='btn-mood';
     if(entry.mood===m) btn.classList.add('active');
     btn.onclick=()=>{
-      entry.mood=m; saveData(); loadDailyEntry(date);
+      entry.mood=m;
+      saveData();
+      loadDailyEntry(date);
     };
     moodContainer.appendChild(btn);
   });
 
-  // Escrita terapêutica
   document.getElementById('input-writing').value = entry.writing;
-  document.getElementById('input-writing').oninput = e=>{entry.writing=e.target.value; saveData();};
+  document.getElementById('input-writing').oninput =
+    e=>{entry.writing=e.target.value; saveData();};
 
-  // Autocuidado
   document.getElementById('input-selfcare').value = entry.selfcare;
-  document.getElementById('input-selfcare').oninput = e=>{entry.selfcare=e.target.value; saveData();};
+  document.getElementById('input-selfcare').oninput =
+    e=>{entry.selfcare=e.target.value; saveData();};
 
-  // Âncora do dia
   document.getElementById('input-anchor').value = entry.anchor;
-  document.getElementById('input-anchor').oninput = e=>{entry.anchor=e.target.value; saveData();};
+  document.getElementById('input-anchor').oninput =
+    e=>{entry.anchor=e.target.value; saveData();};
 
-  loading.classList.add('hidden'); form.classList.remove('hidden');
+  loading.classList.add('hidden');
+  form.classList.remove('hidden');
 }
 
-// Eventos
 document.getElementById('date-picker').value = state.selectedDate;
 document.getElementById('date-picker').onchange = e=>{
   state.selectedDate = e.target.value;
   loadDailyEntry(state.selectedDate);
 };
 
-// Inicialização
-window.addEventListener('DOMContentLoaded', ()=>{loadDailyEntry(state.selectedDate);});
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadDailyEntry(state.selectedDate);
+});
+</script>
 
+<!-- ================================
+     SERVICE WORKER + PWA
+================================ -->
 <script>
-/* ================================
-   SERVICE WORKER (CORRETO)
-================================ */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('service-worker.js')
-      .then(reg => {
-        console.log('✅ Service Worker registrado:', reg.scope);
-      })
-      .catch(err => {
-        console.error('❌ Erro no Service Worker:', err);
-      });
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+      .catch(err => console.error('❌ Erro no Service Worker:', err));
   });
 }
 
-/* ================================
-   BOTÃO DE INSTALAÇÃO PWA
-================================ */
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
 
-  // evita criar botão duplicado
   if (document.getElementById('pwa-install-btn')) return;
 
   const installBtn = document.createElement('button');
@@ -272,7 +279,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     bottom: '16px',
     right: '16px',
     background: '#c67b5c',
-    color: '#ffffff',
+    color: '#fff',
     border: 'none',
     borderRadius: '1rem',
     padding: '0.75rem 1rem',
@@ -284,18 +291,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
   document.body.appendChild(installBtn);
 
-  installBtn.addEventListener('click', async () => {
+  installBtn.onclick = async () => {
     installBtn.disabled = true;
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      console.log('✅ Usuário instalou o PWA');
-    }
-
+    await deferredPrompt.userChoice;
     deferredPrompt = null;
     installBtn.remove();
-  });
+  };
 });
 </script>
 
