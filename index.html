@@ -1,47 +1,164 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projeto Fênix - Planner 2026</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fdfbf7;
-            color: #3d3d3d;
-        }
-        h1, h2, h3, .font-serif {
-            font-family: 'Playfair Display', serif;
-        }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #c67b5c;
-            border-radius: 10px;
-        }
-    </style>
-<script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projeto Fênix — Planner Diário</title>
+<meta name="theme-color" content="#c084fc">
+<link rel="manifest" href="manifest.json">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Inter', sans-serif; background-color: #fdfbf7; color: #3d3d3d; }
+h1,h2,h3,.font-serif { font-family: 'Playfair Display', serif; }
+.mood-btn { padding:.5rem 1rem; border-radius:1rem; border:1px solid #ddd; cursor:pointer; transition:.2s; }
+.mood-btn.active { background:#c084fc; color:white; border-color:#c084fc; transform: scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,.2); }
+textarea,input { outline:none; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col pb-20">
+
+<header class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-[#e8e2d9] p-4 flex justify-between items-center">
+<h1 class="text-xl md:text-3xl font-bold text-[#c084fc]">Projeto Fênix <span class="text-[#a89f91] font-light italic">2026</span></h1>
+<button id="install-btn" class="p-2 rounded-full bg-[#c084fc] text-white shadow-md hidden">Instalar App</button>
+</header>
+
+<main class="max-w-3xl w-full mx-auto px-6 py-10 flex-grow">
+  <div id="view-today">
+    <div class="mb-6">
+      <h2 id="display-dayname" class="text-4xl font-serif capitalize">...</h2>
+      <p id="display-date" class="text-gray-400 uppercase text-xs tracking-widest">...</p>
+      <input type="date" id="input-date" class="border px-2 py-1 mt-2 rounded" />
+    </div>
+
+    <div class="mb-6 p-6 bg-gradient-to-br from-[#f7f0e8] to-white rounded-2xl shadow-sm text-center">
+      <p class="text-[10px] uppercase tracking-widest text-[#c67b5c] font-black mb-2">Inspiração Fênix</p>
+      <blockquote id="display-phrase" class="text-xl md:text-2xl font-serif italic text-[#5d4a44]">Aguardando...</blockquote>
+    </div>
+
+    <div class="mb-6">
+      <h3 class="font-serif font-bold mb-2">🌿 Check-in Emocional</h3>
+      <div id="mood-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+    </div>
+
+    <div class="mb-6">
+      <h3 class="font-serif font-bold mb-2">🪞 Reflexão Profunda</h3>
+      <p id="display-question" class="italic mb-2 text-[#5d4a44]">...</p>
+      <textarea id="field-reconnection" class="w-full border rounded p-4 min-h-[100px]" placeholder="Sua alma responde..." oninput="saveCurrent()"></textarea>
+    </div>
+
+    <div class="mb-6">
+      <h3 class="font-serif font-bold mb-2">✍️ Escrita Terapêutica</h3>
+      <textarea id="field-writing" class="w-full border rounded p-6 min-h-[200px]" placeholder="Escreva livremente..." oninput="saveCurrent()"></textarea>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="font-serif font-bold mb-2">Autocuidado</h3>
+        <textarea id="field-selfcare" class="w-full border rounded p-4 min-h-[100px]" placeholder="Ex: meditar" oninput="saveCurrent()"></textarea>
+      </div>
+      <div>
+        <h3 class="font-serif font-bold mb-2">Âncora do Dia</h3>
+        <input type="text" id="field-keyword" class="w-full border rounded p-4 text-center font-bold text-[#c084fc]" placeholder="Ex: Pausa" oninput="saveCurrent()" />
+      </div>
+    </div>
+
+    <button onclick="downloadBackup()" class="mt-6 bg-[#c084fc] text-white px-6 py-2 rounded-full shadow-md">Baixar Backup</button>
+  </div>
+</main>
+
+<script>
+let entries = JSON.parse(localStorage.getItem('projeto_fenix_data') || '[]');
+let currentDate = new Date().toISOString().split('T')[0];
+let currentEntry = null;
+const MOODS = ['Leve','Cansada','Inspirada','Ansiosa','Grata','Presente'];
+
+const renderMoods = () => {
+  const grid = document.getElementById('mood-grid');
+  grid.innerHTML = MOODS.map(m=>{
+    return `<button class="mood-btn ${currentEntry?.mood===m?'active':''}" onclick="setMood('${m}')">${m}</button>`;
+  }).join('');
+};
+
+window.setMood = (mood) => {
+  currentEntry.mood = mood;
+  renderMoods();
+  saveCurrent();
+};
+
+window.loadDate = (date) => {
+  currentDate = date;
+  document.getElementById('input-date').value = date;
+  const d = new Date(date+'T12:00:00');
+  document.getElementById('display-dayname').innerText = d.toLocaleDateString('pt-BR', { weekday:'long' });
+  document.getElementById('display-date').innerText = d.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+
+  const existing = entries.find(e=>e.date===date);
+  if(existing) currentEntry = existing;
+  else currentEntry = { date, phrase:'Sintonizando...', question:'Qual gesto de amor próprio hoje?', mood:'', reconnection:'', writing:'', selfcare:'', keyword:'' };
+
+  document.getElementById('display-phrase').innerText = currentEntry.phrase;
+  document.getElementById('display-question').innerText = currentEntry.question;
+  document.getElementById('field-reconnection').value = currentEntry.reconnection;
+  document.getElementById('field-writing').value = currentEntry.writing;
+  document.getElementById('field-selfcare').value = currentEntry.selfcare;
+  document.getElementById('field-keyword').value = currentEntry.keyword;
+
+  renderMoods();
+};
+
+window.saveCurrent = () => {
+  currentEntry.reconnection = document.getElementById('field-reconnection').value;
+  currentEntry.writing = document.getElementById('field-writing').value;
+  currentEntry.selfcare = document.getElementById('field-selfcare').value;
+  currentEntry.keyword = document.getElementById('field-keyword').value;
+
+  const idx = entries.findIndex(e=>e.date===currentEntry.date);
+  if(idx>-1) entries[idx]=currentEntry;
+  else entries.push(currentEntry);
+
+  localStorage.setItem('projeto_fenix_data', JSON.stringify(entries));
+};
+
+window.downloadBackup = () => {
+  const blob = new Blob([JSON.stringify(entries, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download = `fenix-backup-${currentDate}.json`;
+  a.click();
+};
+
+loadDate(currentDate);
+
+// PWA
+let deferredPrompt;
+const installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  installBtn.style.display='none';
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    deferredPrompt = null;
   }
+});
+
+// Service Worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load', async ()=>{
+    try{ await navigator.serviceWorker.register('./sw.js'); console.log('SW registrado!'); }
+    catch(e){ console.error('Erro SW:',e); }
+  });
 }
 </script>
-</head>
-<body>
-    <div id="root"></div>
+
 </body>
 </html>
