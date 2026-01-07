@@ -1,7 +1,7 @@
 {
   "name": "Projeto Fênix",
   "short_name": "Fênix",
-  "start_url": "index.html",
+  "start_url": "/projetofenix/",
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#c084fc",
@@ -9,7 +9,8 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2663/2663338.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
