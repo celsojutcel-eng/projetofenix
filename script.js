@@ -1,117 +1,173 @@
-// =======================================
-// PROJETO FÊNIX — PLANNER DIÁRIO (CORRIGIDO)
-// =======================================
+<script>
+/* ==========================================
+   PROJETO FÊNIX — PLANNER DIÁRIO (FINAL)
+   ✔ Data local real (sem UTC)
+   ✔ Input date sincronizado
+   ✔ Sem conflito de carregamento
+========================================== */
 
-// ----------- DATA LOCAL NORMALIZADA -----------
-// Retorna a data local real (sem UTC) no formato YYYY-MM-DD
-function getTodayLocal() {
-  const now = new Date();
-  const localDate = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  );
-
-  const y = localDate.getFullYear();
-  const m = String(localDate.getMonth() + 1).padStart(2, '0');
-  const d = String(localDate.getDate()).padStart(2, '0');
-
-  return `${y}-${m}-${d}`;
+/* ---------- DATA LOCAL REAL ---------- */
+function getLocalDateISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
-// ----------- GERAR CALENDÁRIO DO MÊS -----------
-function generateMonthlyCalendar(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+/* ---------- CONSTANTES ---------- */
+const MOODS = [
+  'Leve','Cansada','Inspirada','Ansiosa',
+  'Presente','Confusa','Grata','Empoderada'
+];
 
-  const todayStr = getTodayLocal();
-  const [year, month] = todayStr.split('-').map(Number);
+const QUESTIONS = [
+  "O que sua alma pede hoje?",
+  "Onde você pode ser mais gentil consigo?",
+  "O que precisa de pausa agora?"
+];
 
-  const daysInMonth = new Date(year, month, 0).getDate();
-  container.innerHTML = '';
+const DAILY_PHRASES = [
+  "Renove sua energia e desperte sua essência.",
+  "Cada amanhecer é um convite ao autoconhecimento.",
+  "Pequenos passos diários criam grandes transformações.",
+  "O silêncio revela aquilo que palavras não conseguem.",
+  "Respire fundo e sinta seu ritmo interno.",
+  "Gratidão transforma o ordinário em extraordinário.",
+  "Permita-se pausar e ouvir seu coração.",
+  "O reencontro com você começa no agora.",
+  "A coragem surge quando você se escuta.",
+  "Liberte-se do que não serve mais."
+];
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+/* ---------- ESTADO ---------- */
+let state = {
+  selectedDate: getLocalDateISO(),
+  currentEntry: null,
+  entries: []
+};
 
-    const entry = document.createElement('div');
-    entry.className = 'daily-entry border p-4 rounded-lg mb-4';
-    entry.dataset.date = dateStr;
+/* ---------- LOCAL STORAGE ---------- */
+try {
+  const saved = localStorage.getItem('projeto_fenix_data');
+  if (saved) state.entries = JSON.parse(saved);
+} catch {
+  localStorage.removeItem('projeto_fenix_data');
+  state.entries = [];
+}
 
-    const savedNote = localStorage.getItem(`note-${dateStr}`) || '';
+function saveData() {
+  localStorage.setItem('projeto_fenix_data', JSON.stringify(state.entries));
+}
 
-    entry.innerHTML = `
-      <h3 class="font-bold text-lg mb-2">Dia ${day}</h3>
-      <textarea
-        class="daily-note w-full p-2 border rounded mb-2"
-        rows="4"
-        placeholder="Escreva aqui suas reflexões..."
-      >${savedNote}</textarea>
-      <button class="save-btn bg-purple-600 text-white px-4 py-2 rounded">
-        Salvar
-      </button>
-    `;
+/* ---------- CARREGAR DIA ---------- */
+function loadDailyEntry(dateStr) {
+  const loading = document.getElementById('loading-overlay');
+  const form = document.getElementById('entry-form');
+  const questionsContainer = document.getElementById('questions-container');
+  const moodContainer = document.getElementById('mood-container');
 
-    // mostra apenas o dia atual
-    entry.style.display = dateStr === todayStr ? 'block' : 'none';
+  loading.classList.remove('hidden');
+  form.classList.add('hidden');
 
-    if (dateStr === todayStr) {
-      entry.classList.add('ring', 'ring-purple-400');
-    }
+  let entry = state.entries.find(e => e.date === dateStr);
 
-    container.appendChild(entry);
-
-    // salvar nota
-    entry.querySelector('.save-btn').addEventListener('click', () => {
-      const text = entry.querySelector('.daily-note').value;
-      localStorage.setItem(`note-${dateStr}`, text);
-      alert('Nota salva com sucesso ✨');
-    });
+  if (!entry) {
+    entry = {
+      date: dateStr,
+      phrase: DAILY_PHRASES[Math.floor(Math.random() * DAILY_PHRASES.length)],
+      questions: QUESTIONS.map(q => ({ text: q, answer: '' })),
+      mood: '',
+      writing: '',
+      selfcare: '',
+      anchor: ''
+    };
+    state.entries.push(entry);
+    saveData();
   }
-}
 
-// ----------- MOSTRAR DIA ESPECÍFICO -----------
-function showEntry(dateStr) {
-  document.querySelectorAll('.daily-entry').forEach(entry => {
-    entry.style.display = entry.dataset.date === dateStr ? 'block' : 'none';
-  });
-}
+  state.currentEntry = entry;
 
-// ----------- AVANÇAR / RETROCEDER DIA -----------
-function shiftDate(dateStr, offset) {
   const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  date.setDate(date.getDate() + offset);
+  const dateObj = new Date(y, m - 1, d);
 
-  const yy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
+  document.getElementById('display-day-name').textContent =
+    dateObj.toLocaleDateString('pt-BR', { weekday: 'long' });
 
-  return `${yy}-${mm}-${dd}`;
-}
+  document.getElementById('display-full-date').textContent =
+    dateObj.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
 
-// ----------- NAVEGAÇÃO -----------
-function setupNavigation() {
-  const prevBtn = document.getElementById('prev-day');
-  const nextBtn = document.getElementById('next-day');
-  if (!prevBtn || !nextBtn) return;
+  document.getElementById('display-phrase').textContent = entry.phrase;
 
-  let currentDate = getTodayLocal();
+  questionsContainer.innerHTML = '';
+  entry.questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'card p-4';
 
-  prevBtn.addEventListener('click', () => {
-    currentDate = shiftDate(currentDate, -1);
-    showEntry(currentDate);
+    const p = document.createElement('p');
+    p.textContent = q.text;
+
+    const ta = document.createElement('textarea');
+    ta.className = 'input-elegant w-full';
+    ta.value = q.answer;
+    ta.oninput = e => {
+      entry.questions[i].answer = e.target.value;
+      saveData();
+    };
+
+    card.appendChild(p);
+    card.appendChild(ta);
+    questionsContainer.appendChild(card);
   });
 
-  nextBtn.addEventListener('click', () => {
-    currentDate = shiftDate(currentDate, 1);
-    showEntry(currentDate);
+  moodContainer.innerHTML = '';
+  MOODS.forEach(mood => {
+    const btn = document.createElement('button');
+    btn.textContent = mood;
+    btn.className = 'btn-mood';
+    if (entry.mood === mood) btn.classList.add('active');
+
+    btn.onclick = () => {
+      entry.mood = mood;
+      saveData();
+      loadDailyEntry(dateStr);
+    };
+
+    moodContainer.appendChild(btn);
   });
+
+  const writing = document.getElementById('input-writing');
+  const selfcare = document.getElementById('input-selfcare');
+  const anchor = document.getElementById('input-anchor');
+
+  writing.value = entry.writing;
+  selfcare.value = entry.selfcare;
+  anchor.value = entry.anchor;
+
+  writing.oninput = e => { entry.writing = e.target.value; saveData(); };
+  selfcare.oninput = e => { entry.selfcare = e.target.value; saveData(); };
+  anchor.oninput = e => { entry.anchor = e.target.value; saveData(); };
+
+  loading.classList.add('hidden');
+  form.classList.remove('hidden');
 }
 
-// ----------- INICIALIZAÇÃO -----------
+/* ---------- INICIALIZAÇÃO FINAL ---------- */
 document.addEventListener('DOMContentLoaded', () => {
-  const today = getTodayLocal();
-  generateMonthlyCalendar('calendar-container');
-  setupNavigation();
-  showEntry(today);
+  const datePicker = document.getElementById('date-picker');
+
+  state.selectedDate = getLocalDateISO();
+  datePicker.value = state.selectedDate;
+
+  datePicker.addEventListener('change', e => {
+    state.selectedDate = e.target.value;
+    loadDailyEntry(state.selectedDate);
+  });
+
+  loadDailyEntry(state.selectedDate);
 });
+</script>
